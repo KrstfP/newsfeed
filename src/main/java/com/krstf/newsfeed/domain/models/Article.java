@@ -8,7 +8,7 @@ import java.util.UUID;
 
 
 public class Article {
-    private UUID id;
+    private final UUID id;
     String title;
     String content;
     String url;

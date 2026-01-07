@@ -1,6 +1,5 @@
 package com.krstf.newsfeed.adapter.inbound.rest;
 
-import com.krstf.newsfeed.domain.models.Article;
 import com.krstf.newsfeed.port.inbound.AnalyzeArticleUseCase;
 import com.krstf.newsfeed.port.inbound.LoadArticlesUseCase;
 import com.krstf.newsfeed.port.inbound.dto.ArticleDto;

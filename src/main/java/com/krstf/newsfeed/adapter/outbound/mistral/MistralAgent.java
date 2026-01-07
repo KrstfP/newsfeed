@@ -2,10 +2,6 @@ package com.krstf.newsfeed.adapter.outbound.mistral;
 
 import com.krstf.newsfeed.domain.models.Article;
 import com.krstf.newsfeed.port.outbound.repository.ArticleAnalyzer;
-import org.springframework.ai.chat.messages.SystemMessage;
-import org.springframework.ai.chat.model.ChatResponse;
-import org.springframework.ai.chat.prompt.ChatOptions;
-import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.mistralai.MistralAiChatModel;
 import org.springframework.stereotype.Service;
 
