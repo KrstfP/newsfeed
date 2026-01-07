@@ -8,8 +8,8 @@ import com.krstf.newsfeed.port.inbound.dto.ArticleDto;
 import com.krstf.newsfeed.port.inbound.dto.ArticleMapper;
 import com.krstf.newsfeed.port.outbound.repository.ArticleLoader;
 import com.krstf.newsfeed.port.outbound.repository.GetAllArticles;
+import com.krstf.newsfeed.port.outbound.repository.GetSource;
 import com.krstf.newsfeed.port.outbound.repository.SaveArticle;
-import com.krstf.newsfeed.port.outbound.repository.SourceGetter;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -17,15 +17,15 @@ import java.util.List;
 
 @Service
 public class LoadArticlesUseCaseService implements LoadArticlesUseCase, RefreshArticlesUseCase {
-    private final SourceGetter sourceGetter;
+    private final GetSource getSource;
     private final ArticleLoader articleLoader;
     private final GetAllArticles getAllArticles;
     private final SaveArticle saveArticle;
     private final ArticleMapper articleMapper;
 
 
-    public LoadArticlesUseCaseService(SourceGetter sourceGetter, ArticleLoader articleLoader, GetAllArticles getAllArticles, SaveArticle saveArticle, ArticleMapper articleMapper) {
-        this.sourceGetter = sourceGetter;
+    public LoadArticlesUseCaseService(GetSource getSource, ArticleLoader articleLoader, GetAllArticles getAllArticles, SaveArticle saveArticle, ArticleMapper articleMapper) {
+        this.getSource = getSource;
         this.articleLoader = articleLoader;
         this.getAllArticles = getAllArticles;
         this.saveArticle = saveArticle;
@@ -43,7 +43,7 @@ public class LoadArticlesUseCaseService implements LoadArticlesUseCase, RefreshA
     )
     @Override
     public void refreshArticles() {
-        List<Source> sources = sourceGetter.getSources();
+        List<Source> sources = getSource.getAllSources();
 
         for (Source source : sources) {
             List<Article> articles = articleLoader.loadArticles(source);

@@ -16,7 +16,7 @@ public class ArticleMapperService implements ArticleMapper {
                 article.getContent(),
                 article.getUrl(),
                 article.getPublishedAt(),
-                article.getSource().getName(),
+                article.getSourceName(),
                 article.getCategories()
         );
     }

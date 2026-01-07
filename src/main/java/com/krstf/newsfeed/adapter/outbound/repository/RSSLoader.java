@@ -40,7 +40,8 @@ public class RSSLoader implements ArticleLoader {
                 extractContent(entry),
                 entry.getLink(),
                 extractPublishedDate(entry),
-                source
+                source.getId(),
+                source.getName()
         );
         article.setCategories(extractCategories(entry));
         return article;
