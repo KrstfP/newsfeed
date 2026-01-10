@@ -1,4 +1,4 @@
-package com.krstf.newsfeed.adapter.outbound.repository.entity;
+package com.krstf.newsfeed.adapter.outbound.repository.mongo.entity;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -21,11 +21,20 @@ public class SourceEntity {
         this.description = description;
     }
 
-    public final UUID getId() { return  UUID.fromString(id); }
+    public final UUID getId() {
+        return UUID.fromString(id);
+    }
+
     public final URI getRssFeedUrl() {
         return rssFeedUrl;
     }
-    public final String getName() { return name; }
-    public final String getDescription() { return description; }
+
+    public final String getName() {
+        return name;
+    }
+
+    public final String getDescription() {
+        return description;
+    }
 
 }

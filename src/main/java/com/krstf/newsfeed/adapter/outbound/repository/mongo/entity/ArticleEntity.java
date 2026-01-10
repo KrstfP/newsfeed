@@ -1,4 +1,4 @@
-package com.krstf.newsfeed.adapter.outbound.repository.entity;
+package com.krstf.newsfeed.adapter.outbound.repository.mongo.entity;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -23,10 +23,13 @@ public class ArticleEntity {
 
     private String sourceName;
 
-    protected ArticleEntity() {}
+    protected ArticleEntity() {
+    }
 
     @Indexed
     private List<String> categories;
+
+    private AnalysisEntity analysis;
 
     public ArticleEntity(
             String id,
@@ -49,7 +52,9 @@ public class ArticleEntity {
     }
 
     // getters uniquement
-    public UUID getId() {return UUID.fromString(id);}
+    public UUID getId() {
+        return UUID.fromString(id);
+    }
 
     public String getTitle() {
         return title;
@@ -71,7 +76,9 @@ public class ArticleEntity {
         return UUID.fromString(this.sourceId);
     }
 
-    public String getSourceName() { return sourceName; }
+    public String getSourceName() {
+        return sourceName;
+    }
 
     public List<String> getCategories() {
         return categories;

@@ -1,6 +1,6 @@
-package com.krstf.newsfeed.adapter.outbound.repository;
+package com.krstf.newsfeed.adapter.outbound.repository.mongo;
 
-import com.krstf.newsfeed.adapter.outbound.repository.mappers.EntityMapper;
+import com.krstf.newsfeed.adapter.outbound.repository.mongo.mappers.EntityMapper;
 import com.krstf.newsfeed.domain.models.Article;
 import com.krstf.newsfeed.port.outbound.repository.GetAllArticles;
 import com.krstf.newsfeed.port.outbound.repository.GetArticle;

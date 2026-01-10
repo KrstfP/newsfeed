@@ -1,6 +1,5 @@
-package com.krstf.newsfeed.adapter.outbound.repository;
+package com.krstf.newsfeed.adapter.outbound.repository.rss;
 
-import com.krstf.newsfeed.domain.models.Article;
 import com.krstf.newsfeed.domain.models.Source;
 import com.krstf.newsfeed.port.outbound.repository.ArticleLoader;
 import com.rometools.rome.feed.synd.SyndCategory;
@@ -15,9 +14,9 @@ import java.util.Date;
 import java.util.List;
 
 @Service
-public class RSSLoader implements ArticleLoader {
+public class Article implements ArticleLoader {
     @Override
-    public List<Article> loadArticles(Source source) {
+    public List<com.krstf.newsfeed.domain.models.Article> loadArticles(Source source) {
         try {
             SyndFeedInput input = new SyndFeedInput();
             SyndFeed feed = input.build(new XmlReader(source.getRssFeedUrl().toURL()));
@@ -35,8 +34,8 @@ public class RSSLoader implements ArticleLoader {
         }
     }
 
-    private Article toArticle(SyndEntry entry, Source source) {
-        Article article = new Article(
+    private com.krstf.newsfeed.domain.models.Article toArticle(SyndEntry entry, Source source) {
+        com.krstf.newsfeed.domain.models.Article article = new com.krstf.newsfeed.domain.models.Article(
                 entry.getTitle(),
                 Jsoup.parse(extractContent(entry)).text(),
                 entry.getLink(),

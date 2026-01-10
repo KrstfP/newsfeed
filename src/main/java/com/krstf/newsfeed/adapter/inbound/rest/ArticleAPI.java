@@ -1,8 +1,9 @@
 package com.krstf.newsfeed.adapter.inbound.rest;
 
-import com.krstf.newsfeed.port.inbound.AnalyzeArticleUseCase;
 import com.krstf.newsfeed.port.inbound.LoadArticlesUseCase;
+import com.krstf.newsfeed.port.inbound.RequestArticleAnalysisUseCase;
 import com.krstf.newsfeed.port.inbound.dto.ArticleDto;
+import com.krstf.newsfeed.port.inbound.dto.RequestDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,11 +18,11 @@ import java.util.UUID;
 public class ArticleAPI {
 
     private final LoadArticlesUseCase loadArticlesUseCase;
-    private final AnalyzeArticleUseCase analyzeArticleUseCase;
+    private final RequestArticleAnalysisUseCase requestArticleAnalysisUseCase;
 
-    public ArticleAPI(LoadArticlesUseCase loadArticlesUseCase, AnalyzeArticleUseCase analyzeArticleUseCase) {
+    public ArticleAPI(LoadArticlesUseCase loadArticlesUseCase, RequestArticleAnalysisUseCase requestArticleAnalysisUseCase) {
         this.loadArticlesUseCase = loadArticlesUseCase;
-        this.analyzeArticleUseCase = analyzeArticleUseCase;
+        this.requestArticleAnalysisUseCase = requestArticleAnalysisUseCase;
     }
 
     @GetMapping("/articles")
@@ -30,8 +31,7 @@ public class ArticleAPI {
     }
 
     @GetMapping("/article/{articleId}/analyze")
-    public ResponseEntity<String> analyzeArticle(@PathVariable String articleId) {
-        String analysis = this.analyzeArticleUseCase.analyzeArticle(UUID.fromString(articleId));
-        return ResponseEntity.ok(analysis);
+    public ResponseEntity<RequestDto> analyzeArticle(@PathVariable String articleId) {
+        return ResponseEntity.ok(this.requestArticleAnalysisUseCase.requestAnalysis(UUID.fromString(articleId)));
     }
 }
