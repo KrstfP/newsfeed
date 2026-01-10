@@ -2,6 +2,7 @@ package com.krstf.newsfeed.application.services;
 
 import com.krstf.newsfeed.domain.models.AnalysisRequest;
 import com.krstf.newsfeed.domain.models.Article;
+import com.krstf.newsfeed.port.outbound.notification.Notifier;
 import com.krstf.newsfeed.port.outbound.publish.PublishInGithub;
 import com.krstf.newsfeed.port.outbound.repository.AnalysisRequestQueue;
 import com.krstf.newsfeed.port.outbound.repository.ArticleAnalyzer;
@@ -18,12 +19,14 @@ public class AnalyzeArticleUseCaseService {
     private final ArticleAnalyzer articleAnalyzer;
     private final PublishInGithub publishInGithub;
     private final AnalysisRequestQueue analysisRequestQueue;
+    private final Notifier notifier;
 
-    public AnalyzeArticleUseCaseService(GetArticle getArticle, ArticleAnalyzer articleAnalyzer, PublishInGithub publishInGithub, AnalysisRequestQueue analysisRequestQueue) {
+    public AnalyzeArticleUseCaseService(GetArticle getArticle, ArticleAnalyzer articleAnalyzer, PublishInGithub publishInGithub, AnalysisRequestQueue analysisRequestQueue, Notifier notifier) {
         this.getArticle = getArticle;
         this.articleAnalyzer = articleAnalyzer;
         this.publishInGithub = publishInGithub;
         this.analysisRequestQueue = analysisRequestQueue;
+        this.notifier = notifier;
     }
 
     @Scheduled(fixedDelay = 10_000)
@@ -36,15 +39,19 @@ public class AnalyzeArticleUseCaseService {
 
         request.start();
         request = analysisRequestQueue.save(request);
+
         Optional<Article> article = getArticle.getArticleById(request.getArticleId());
+        article.ifPresent(notifier::notifyAnalysisStarted);
         if (article.isEmpty()) {
             request.fail();
             analysisRequestQueue.save(request);
+            article.ifPresent(notifier::notifyAnalysisFailed);
             return;
         }
-
-//        publishInGithub.publishAnalysis(article.get(), analysis);
-//        request.complete();
-//        request = analysisRequestQueue.save(request);
+        String analysis = articleAnalyzer.analyzeArticle(article.get());
+        publishInGithub.publishAnalysis(article.get(), analysis);
+        request.complete();
+        request = analysisRequestQueue.save(request);
+        article.ifPresent(a -> notifier.notifyAnalysisCompleted(a, analysis));
     }
 }

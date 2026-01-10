@@ -6,10 +6,8 @@ import com.krstf.newsfeed.port.inbound.LoadArticlesUseCase;
 import com.krstf.newsfeed.port.inbound.RefreshArticlesUseCase;
 import com.krstf.newsfeed.port.inbound.dto.ArticleDto;
 import com.krstf.newsfeed.port.inbound.dto.ArticleMapper;
-import com.krstf.newsfeed.port.outbound.repository.ArticleLoader;
-import com.krstf.newsfeed.port.outbound.repository.GetAllArticles;
-import com.krstf.newsfeed.port.outbound.repository.GetSource;
-import com.krstf.newsfeed.port.outbound.repository.SaveArticle;
+import com.krstf.newsfeed.port.outbound.notification.Notifier;
+import com.krstf.newsfeed.port.outbound.repository.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -22,14 +20,18 @@ public class LoadArticlesUseCaseService implements LoadArticlesUseCase, RefreshA
     private final GetAllArticles getAllArticles;
     private final SaveArticle saveArticle;
     private final ArticleMapper articleMapper;
+    private final GetArticle getArticle;
+    private final Notifier notifier;
 
 
-    public LoadArticlesUseCaseService(GetSource getSource, ArticleLoader articleLoader, GetAllArticles getAllArticles, SaveArticle saveArticle, ArticleMapper articleMapper) {
+    public LoadArticlesUseCaseService(GetSource getSource, ArticleLoader articleLoader, GetAllArticles getAllArticles, SaveArticle saveArticle, ArticleMapper articleMapper, GetArticle getArticle, Notifier notifier) {
         this.getSource = getSource;
         this.articleLoader = articleLoader;
         this.getAllArticles = getAllArticles;
         this.saveArticle = saveArticle;
         this.articleMapper = articleMapper;
+        this.getArticle = getArticle;
+        this.notifier = notifier;
     }
 
 
@@ -53,7 +55,11 @@ public class LoadArticlesUseCaseService implements LoadArticlesUseCase, RefreshA
             }
 
             for (Article article : articles) {
+                if (this.getArticle.getArticleById(article.getId()) != null) {
+                    continue;
+                }
                 this.saveArticle.saveArticle(article);
+                this.notifier.notifyNewArticleAvailable(article);
             }
         }
     }

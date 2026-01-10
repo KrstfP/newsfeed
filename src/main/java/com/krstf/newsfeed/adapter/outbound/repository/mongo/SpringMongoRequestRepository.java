@@ -10,5 +10,4 @@ import java.util.Optional;
 public interface SpringMongoRequestRepository extends MongoRepository<RequestEntity, String> {
     Optional<RequestEntity>
     findFirstByStatusOrderByUpdatedAtAsc(RequestStatus status);
-
 }

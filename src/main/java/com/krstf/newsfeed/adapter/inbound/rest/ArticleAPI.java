@@ -1,9 +1,9 @@
 package com.krstf.newsfeed.adapter.inbound.rest;
 
-import com.krstf.newsfeed.port.inbound.LoadArticlesUseCase;
+import com.krstf.newsfeed.adapter.outbound.repository.reads.FullArticleRepository;
 import com.krstf.newsfeed.port.inbound.RequestArticleAnalysisUseCase;
-import com.krstf.newsfeed.port.inbound.dto.ArticleDto;
 import com.krstf.newsfeed.port.inbound.dto.RequestDto;
+import com.krstf.newsfeed.port.outbound.repository.FullArticleDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,17 +17,17 @@ import java.util.UUID;
 @RequestMapping("/api")
 public class ArticleAPI {
 
-    private final LoadArticlesUseCase loadArticlesUseCase;
+    private final FullArticleRepository fullArticleRepository;
     private final RequestArticleAnalysisUseCase requestArticleAnalysisUseCase;
 
-    public ArticleAPI(LoadArticlesUseCase loadArticlesUseCase, RequestArticleAnalysisUseCase requestArticleAnalysisUseCase) {
-        this.loadArticlesUseCase = loadArticlesUseCase;
+    public ArticleAPI(FullArticleRepository fullArticleRepository, RequestArticleAnalysisUseCase requestArticleAnalysisUseCase) {
+        this.fullArticleRepository = fullArticleRepository;
         this.requestArticleAnalysisUseCase = requestArticleAnalysisUseCase;
     }
 
     @GetMapping("/articles")
-    public ResponseEntity<List<ArticleDto>> getArticles() {
-        return ResponseEntity.ok(this.loadArticlesUseCase.loadArticles());
+    public ResponseEntity<List<FullArticleDto>> getArticles() {
+        return ResponseEntity.ok(this.fullArticleRepository.getFullArticles());
     }
 
     @GetMapping("/article/{articleId}/analyze")

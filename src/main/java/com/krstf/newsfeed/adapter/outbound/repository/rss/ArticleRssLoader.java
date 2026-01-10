@@ -14,7 +14,7 @@ import java.util.Date;
 import java.util.List;
 
 @Service
-public class Article implements ArticleLoader {
+public class ArticleRssLoader implements ArticleLoader {
     @Override
     public List<com.krstf.newsfeed.domain.models.Article> loadArticles(Source source) {
         try {
