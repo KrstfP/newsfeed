@@ -8,6 +8,7 @@ import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.io.SyndFeedInput;
 import com.rometools.rome.io.XmlReader;
+import org.jsoup.Jsoup;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -37,7 +38,7 @@ public class RSSLoader implements ArticleLoader {
     private Article toArticle(SyndEntry entry, Source source) {
         Article article = new Article(
                 entry.getTitle(),
-                extractContent(entry),
+                Jsoup.parse(extractContent(entry)).text(),
                 entry.getLink(),
                 extractPublishedDate(entry),
                 source.getId(),

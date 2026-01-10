@@ -26,7 +26,7 @@ public class EntityMapper {
     }
 
     public Article toDomain(ArticleEntity entity) {
-        return new Article(
+        Article article = new Article(
                 entity.getId(),
                 entity.getTitle(),
                 entity.getContent(),
@@ -35,6 +35,8 @@ public class EntityMapper {
                 entity.getSourceId(),
                 entity.getSourceName()
         );
+        article.setCategories(entity.getCategories());
+        return article;
     }
 
     public ArticleEntity toEntity(Article article) {
