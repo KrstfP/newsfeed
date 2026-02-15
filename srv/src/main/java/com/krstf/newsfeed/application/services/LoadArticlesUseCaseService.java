@@ -54,12 +54,13 @@ public class LoadArticlesUseCaseService implements LoadArticlesUseCase, RefreshA
                 continue;
             }
 
+            System.out.println("Loaded " + articles.size() + " articles from source: " + source.getName());
             for (Article article : articles) {
-                if (this.getArticle.getArticleById(article.getId()) != null) {
-                    continue;
+                if (this.getArticle.getArticleById(article.getId()).isEmpty()) {
+                    System.out.println("Saving new article: " + article.getTitle());
+                    this.saveArticle.saveArticle(article);
+                    this.notifier.notifyNewArticleAvailable(article);
                 }
-                this.saveArticle.saveArticle(article);
-                this.notifier.notifyNewArticleAvailable(article);
             }
         }
     }

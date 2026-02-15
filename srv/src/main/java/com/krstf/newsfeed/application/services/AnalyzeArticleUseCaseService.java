@@ -3,7 +3,6 @@ package com.krstf.newsfeed.application.services;
 import com.krstf.newsfeed.domain.models.AnalysisRequest;
 import com.krstf.newsfeed.domain.models.Article;
 import com.krstf.newsfeed.port.outbound.notification.Notifier;
-import com.krstf.newsfeed.port.outbound.publish.PublishInGithub;
 import com.krstf.newsfeed.port.outbound.repository.AnalysisRequestQueue;
 import com.krstf.newsfeed.port.outbound.repository.ArticleAnalyzer;
 import com.krstf.newsfeed.port.outbound.repository.GetArticle;
@@ -17,14 +16,12 @@ public class AnalyzeArticleUseCaseService {
 
     private final GetArticle getArticle;
     private final ArticleAnalyzer articleAnalyzer;
-    private final PublishInGithub publishInGithub;
     private final AnalysisRequestQueue analysisRequestQueue;
     private final Notifier notifier;
 
-    public AnalyzeArticleUseCaseService(GetArticle getArticle, ArticleAnalyzer articleAnalyzer, PublishInGithub publishInGithub, AnalysisRequestQueue analysisRequestQueue, Notifier notifier) {
+    public AnalyzeArticleUseCaseService(GetArticle getArticle, ArticleAnalyzer articleAnalyzer, AnalysisRequestQueue analysisRequestQueue, Notifier notifier) {
         this.getArticle = getArticle;
         this.articleAnalyzer = articleAnalyzer;
-        this.publishInGithub = publishInGithub;
         this.analysisRequestQueue = analysisRequestQueue;
         this.notifier = notifier;
     }
@@ -49,7 +46,6 @@ public class AnalyzeArticleUseCaseService {
             return;
         }
         String analysis = articleAnalyzer.analyzeArticle(article.get());
-        publishInGithub.publishAnalysis(article.get(), analysis);
         request.complete();
         request = analysisRequestQueue.save(request);
         article.ifPresent(a -> notifier.notifyAnalysisCompleted(a, analysis));
