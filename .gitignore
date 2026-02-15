@@ -1,23 +1,25 @@
 HELP.md
-target/
-.mvn/wrapper/maven-wrapper.jar
+!**/target/
+srv/.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+srv/target
+srv/src/main/resources/static
 
 ### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
+srv/.apt_generated
+srv/.classpath
+srv/.factorypath
+srv/.project
+srv/.settings
+srv/.springBeans
+srv/.sts4-cache
 
 ### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
+!**/.idea
+!**/*.iws
+!**/*.iml
+!**/*.ipr
 
 ### NetBeans ###
 /nbproject/private/
@@ -30,4 +32,32 @@ build/
 !**/src/test/**/build/
 
 ### VS Code ###
-.vscode/
+!**/.vscode/
+
+
+# Logs
+!**/logs
+!**/*.log
+!**/npm-debug.log*
+!**/yarn-debug.log*
+!**/yarn-error.log*
+!**/pnpm-debug.log*
+!**/lerna-debug.log*
+
+front/node_modules
+front/dist
+front/dist-ssr
+front/*.local
+front/*.DS_Store
+front/.env
+
+# Editor directories and files
+**/.vscode/*
+**/!.vscode/extensions.json
+**/.idea
+**/.DS_Store
+**/*.suo
+**/*.ntvs*
+**/*.njsproj
+**/*.sln
+**/*.sw?
