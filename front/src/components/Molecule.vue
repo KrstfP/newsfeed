@@ -5765,12 +5765,12 @@
 
 .st0 {
   opacity: 0.4;
-  fill: #9BB4C0;
+  fill: #9EDDFF;
 }
 
 .st1 {
   opacity: 0.2;
-  fill: #9BB4C0;
+  fill: #9EDDFF;
 }
 
 #molecule {

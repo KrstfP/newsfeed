@@ -9,17 +9,35 @@ import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.io.SyndFeedInput;
 import com.rometools.rome.io.XmlReader;
 import org.jsoup.Jsoup;
+import org.springframework.stereotype.Service;
 
+import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 
-public class ArticleRssLoader implements ArticleLoader {
+/**
+ * Test/dev helper: charge un RSS depuis le fichier `rss-sample.xml` présent dans les resources.
+ * Utile pour les tests unitaires ou pour démarrer l'app en local sans accès réseau.
+ */
+@Service
+public class ArticleRssLoaderFromString implements ArticleLoader {
+    private static final String RESOURCE_NAME = "rss-sample.xml";
+
+    public ArticleRssLoaderFromString() {
+        // loader sans argument : lit toujours la ressource
+    }
+
     @Override
     public List<RssItem> loadArticles(RssFeedSource rssFeedSource) {
-        try {
-            SyndFeedInput input = new SyndFeedInput();
-            SyndFeed feed = input.build(new XmlReader(rssFeedSource.getRssFeedUrl().toURL()));
+        try (InputStream in = getClass().getClassLoader().getResourceAsStream(RESOURCE_NAME);
+             XmlReader reader = new XmlReader(in)) {
 
+            if (in == null) {
+                throw new RuntimeException("Resource '" + RESOURCE_NAME + "' not found on classpath");
+            }
+
+            SyndFeedInput input = new SyndFeedInput();
+            SyndFeed feed = input.build(reader);
 
             return feed.getEntries()
                     .stream()
@@ -27,10 +45,7 @@ public class ArticleRssLoader implements ArticleLoader {
                     .toList();
 
         } catch (Exception e) {
-            throw new RuntimeException(
-                    "Failed to load articles from RSS feed: " + rssFeedSource.getRssFeedUrl(),
-                    e
-            );
+            throw new RuntimeException("Failed to load articles from RSS feed (from resource)", e);
         }
     }
 

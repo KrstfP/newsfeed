@@ -12,6 +12,7 @@ public record FullArticleDto(
         String sourceId,
         String source,
         List<String> categories,
-        String analysisRequestStatus
+        String analysisRequestStatus,
+        String analysis
 ) {
 }

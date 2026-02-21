@@ -1,15 +1,15 @@
 package com.krstf.newsfeed.port.outbound.notification;
 
-import com.krstf.newsfeed.domain.models.Article;
+import com.krstf.newsfeed.domain.models.RssItem;
 
 public interface Notifier {
-    void notifyNewArticleAvailable(Article article);
+    void notifyNewArticleAvailable(RssItem rssItem);
 
-    void notifyAnalysisCompleted(Article article, String analysis);
+    void notifyAnalysisCompleted(RssItem rssItem, String analysis);
 
-    void notifyAnalysisRequested(Article article);
+    void notifyAnalysisRequested(RssItem rssItem);
 
-    void notifyAnalysisFailed(Article article);
+    void notifyAnalysisFailed(RssItem rssItem);
 
-    void notifyAnalysisStarted(Article article);
+    void notifyAnalysisStarted(RssItem rssItem);
 }

@@ -1,7 +1,7 @@
 package com.krstf.newsfeed.application.services;
 
 import com.krstf.newsfeed.domain.models.AnalysisRequest;
-import com.krstf.newsfeed.domain.models.Article;
+import com.krstf.newsfeed.domain.models.RssItem;
 import com.krstf.newsfeed.port.outbound.notification.Notifier;
 import com.krstf.newsfeed.port.outbound.repository.AnalysisRequestQueue;
 import com.krstf.newsfeed.port.outbound.repository.ArticleAnalyzer;
@@ -37,7 +37,7 @@ public class AnalyzeArticleUseCaseService {
         request.start();
         request = analysisRequestQueue.save(request);
 
-        Optional<Article> article = getArticle.getArticleById(request.getArticleId());
+        Optional<RssItem> article = getArticle.getArticleById(request.getArticleId());
         article.ifPresent(notifier::notifyAnalysisStarted);
         if (article.isEmpty()) {
             request.fail();
@@ -45,9 +45,18 @@ public class AnalyzeArticleUseCaseService {
             article.ifPresent(notifier::notifyAnalysisFailed);
             return;
         }
-        String analysis = articleAnalyzer.analyzeArticle(article.get());
-        request.complete();
-        request = analysisRequestQueue.save(request);
-        article.ifPresent(a -> notifier.notifyAnalysisCompleted(a, analysis));
+        try {
+            System.out.println("STARTING ANALYSIS FOR ARTICLE: " + article.get().getId());
+            String analysis = articleAnalyzer.analyzeArticle(article.get());
+            System.out.println("COMPLETED ANALYSIS FOR ARTICLE: " + article.get().getId());
+            request.complete();
+            request = analysisRequestQueue.save(request);
+            article.ifPresent(a -> notifier.notifyAnalysisCompleted(a, analysis));
+        } catch (Exception e) {
+            System.out.println("FAILED ANALYSIS FOR ARTICLE: " + article.get().getId() + " with error: " + e.getMessage());
+            request.fail();
+            analysisRequestQueue.save(request);
+            article.ifPresent(a -> notifier.notifyAnalysisFailed(a));
+        }
     }
 }

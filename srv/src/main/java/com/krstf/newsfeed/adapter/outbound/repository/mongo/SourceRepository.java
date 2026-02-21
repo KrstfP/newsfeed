@@ -1,7 +1,7 @@
 package com.krstf.newsfeed.adapter.outbound.repository.mongo;
 
 import com.krstf.newsfeed.adapter.outbound.repository.mongo.mappers.EntityMapper;
-import com.krstf.newsfeed.domain.models.Source;
+import com.krstf.newsfeed.domain.models.RssFeedSource;
 import com.krstf.newsfeed.port.outbound.repository.GetSource;
 import org.springframework.stereotype.Repository;
 
@@ -18,7 +18,7 @@ public class SourceRepository implements GetSource {
     }
 
     @Override
-    public List<Source> getAllSources() {
+    public List<RssFeedSource> getAllSources() {
         return springMongoSourceRepository.findAll().stream().map(entityMapper::toDomain).toList();
     }
 }

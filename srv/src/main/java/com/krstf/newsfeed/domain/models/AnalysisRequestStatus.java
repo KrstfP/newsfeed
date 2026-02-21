@@ -1,6 +1,6 @@
 package com.krstf.newsfeed.domain.models;
 
-public enum AnalysisStatus {
+public enum AnalysisRequestStatus {
     NOT_REQUESTED,
     PENDING,
     IN_PROGRESS,

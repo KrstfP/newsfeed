@@ -6,7 +6,12 @@ import java.util.List;
 import java.util.UUID;
 
 
-public class Article {
+/**
+ * Represents an individual news article or item from an RSS feed.
+ * Each RssItem has a unique identifier, a title, content, a URL, a publication date, and is associated with a source.
+ * It may also have a list of categories or tags that describe the content of the article.
+ */
+public class RssItem {
     private final UUID id;
     private final String title;
     private final String content;
@@ -41,11 +46,15 @@ public class Article {
         return categories;
     }
 
-    public UUID getSourceId() { return sourceId; }
+    public UUID getSourceId() {
+        return sourceId;
+    }
 
-    public String getSourceName() { return sourceName; }
+    public String getSourceName() {
+        return sourceName;
+    }
 
-    public Article(String title, String content, String url, Date publishedAt, UUID sourceId, String sourceName) {
+    public RssItem(String title, String content, String url, Date publishedAt, UUID sourceId, String sourceName) {
         this.id = UUID.nameUUIDFromBytes(
                 url.getBytes(StandardCharsets.UTF_8));
         this.title = title;
@@ -56,7 +65,7 @@ public class Article {
         this.publishedAt = publishedAt;
     }
 
-    public Article(UUID id, String title, String content, String url, Date publishedAt, UUID sourceId, String sourceName) {
+    public RssItem(UUID id, String title, String content, String url, Date publishedAt, UUID sourceId, String sourceName) {
         this.id = id;
         this.title = title;
         this.content = content;

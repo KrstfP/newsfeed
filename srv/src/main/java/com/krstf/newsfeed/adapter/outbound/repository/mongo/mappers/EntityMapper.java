@@ -5,9 +5,9 @@ import com.krstf.newsfeed.adapter.outbound.repository.mongo.entity.RequestEntity
 import com.krstf.newsfeed.adapter.outbound.repository.mongo.entity.RequestStatus;
 import com.krstf.newsfeed.adapter.outbound.repository.mongo.entity.SourceEntity;
 import com.krstf.newsfeed.domain.models.AnalysisRequest;
-import com.krstf.newsfeed.domain.models.AnalysisStatus;
-import com.krstf.newsfeed.domain.models.Article;
-import com.krstf.newsfeed.domain.models.Source;
+import com.krstf.newsfeed.domain.models.AnalysisRequestStatus;
+import com.krstf.newsfeed.domain.models.RssFeedSource;
+import com.krstf.newsfeed.domain.models.RssItem;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -16,18 +16,18 @@ import java.util.UUID;
 public class EntityMapper {
 
     public AnalysisRequest toDomain(RequestEntity entity) {
-        AnalysisStatus analysisStatus = AnalysisStatus.NOT_REQUESTED;
+        AnalysisRequestStatus analysisRequestStatus = AnalysisRequestStatus.NOT_REQUESTED;
         switch (entity.getStatus()) {
-            case RequestStatus.PENDING -> analysisStatus = AnalysisStatus.PENDING;
-            case RequestStatus.IN_PROGRESS -> analysisStatus = AnalysisStatus.IN_PROGRESS;
-            case RequestStatus.COMPLETED -> analysisStatus = AnalysisStatus.COMPLETED;
-            case RequestStatus.FAILED -> analysisStatus = AnalysisStatus.FAILED;
+            case RequestStatus.PENDING -> analysisRequestStatus = AnalysisRequestStatus.PENDING;
+            case RequestStatus.IN_PROGRESS -> analysisRequestStatus = AnalysisRequestStatus.IN_PROGRESS;
+            case RequestStatus.COMPLETED -> analysisRequestStatus = AnalysisRequestStatus.COMPLETED;
+            case RequestStatus.FAILED -> analysisRequestStatus = AnalysisRequestStatus.FAILED;
         }
 
         return new AnalysisRequest(
                 UUID.fromString(entity.getId()),
                 UUID.fromString(entity.getArticleId()),
-                analysisStatus,
+                analysisRequestStatus,
                 entity.getCreatedAt(),
                 entity.getUpdatedAt(),
                 entity.getVersion()
@@ -52,25 +52,25 @@ public class EntityMapper {
         );
     }
 
-    public Source toDomain(SourceEntity entity) {
-        return new Source(
+    public RssFeedSource toDomain(SourceEntity entity) {
+        return new RssFeedSource(
                 entity.getRssFeedUrl(),
                 entity.getName(),
                 entity.getDescription()
         );
     }
 
-    public SourceEntity toEntity(Source source) {
+    public SourceEntity toEntity(RssFeedSource rssFeedSource) {
         return new SourceEntity(
-                source.getId().toString(),
-                source.getRssFeedUrl(),
-                source.getName(),
-                source.getDescription()
+                rssFeedSource.getId().toString(),
+                rssFeedSource.getRssFeedUrl(),
+                rssFeedSource.getName(),
+                rssFeedSource.getDescription()
         );
     }
 
-    public Article toDomain(ArticleEntity entity) {
-        Article article = new Article(
+    public RssItem toDomain(ArticleEntity entity) {
+        RssItem rssItem = new RssItem(
                 entity.getId(),
                 entity.getTitle(),
                 entity.getContent(),
@@ -79,20 +79,20 @@ public class EntityMapper {
                 entity.getSourceId(),
                 entity.getSourceName()
         );
-        article.setCategories(entity.getCategories());
-        return article;
+        rssItem.setCategories(entity.getCategories());
+        return rssItem;
     }
 
-    public ArticleEntity toEntity(Article article) {
+    public ArticleEntity toEntity(RssItem rssItem) {
         return new ArticleEntity(
-                article.getId().toString(),
-                article.getTitle(),
-                article.getContent(),
-                article.getUrl(),
-                article.getPublishedAt(),
-                article.getSourceId(),
-                article.getSourceName(),
-                article.getCategories()
+                rssItem.getId().toString(),
+                rssItem.getTitle(),
+                rssItem.getContent(),
+                rssItem.getUrl(),
+                rssItem.getPublishedAt(),
+                rssItem.getSourceId(),
+                rssItem.getSourceName(),
+                rssItem.getCategories()
         );
     }
 

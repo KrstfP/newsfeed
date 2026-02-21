@@ -1,6 +1,6 @@
 package com.krstf.newsfeed.adapter.outbound.mistral;
 
-import com.krstf.newsfeed.domain.models.Article;
+import com.krstf.newsfeed.domain.models.RssItem;
 import com.krstf.newsfeed.port.outbound.repository.ArticleAnalyzer;
 import org.springframework.ai.mistralai.MistralAiChatModel;
 import org.springframework.stereotype.Service;
@@ -11,7 +11,7 @@ public class MistralAgent implements ArticleAnalyzer {
 
     private static final String userPrompt = """
             Tu es un analyste militaire et géopolitique.
-            Ton objectif est de lire un article dont je te donne l'URL et de générer un **résumé détaillé** en **gardant exactement la structure suivante**, peu importe l’article. Chaque section doit apparaître et être titrée **tel quel**.
+            Ton objectif est de lire un rssItem dont je te donne l'URL et de générer un **résumé détaillé** en **gardant exactement la structure suivante**, peu importe l’rssItem. Chaque section doit apparaître et être titrée **tel quel**.
             
             STRUCTURE DU RÉSUMÉ (ne jamais changer les titres) :
             
@@ -22,15 +22,15 @@ public class MistralAgent implements ArticleAnalyzer {
             - Date de publication
             - Auteur (si disponible)
             - Lien direct
-            - Type d’article : news / analyse / tribune / reportage
-           
-           
+            - Type d’rssItem : news / analyse / tribune / reportage
+            
+            
             ## SYNTHÈSE / TAKEAWAYS
             - 5–10 lignes résumant ce qu’il faut retenir absolument
             - Messages clés pour un briefing décisionnel
             
             ## SUJET PRINCIPAL
-            - Titre complet de l’article
+            - Titre complet de l’rssItem
             - Résumé du sujet en 2–3 phrases
             
             ## CONTEXTE DÉTAILLÉ
@@ -59,11 +59,11 @@ public class MistralAgent implements ArticleAnalyzer {
             **Instructions supplémentaires** :
             - Pas de phrase d'introduction, tu démarres directement ta réponse par le résumé
             - Rédige en style clair, concis mais complet, orienté militaire / stratégique.
-            - Tout ce qui est important dans l’article doit apparaître dans la section appropriée.
+            - Tout ce qui est important dans l’rssItem doit apparaître dans la section appropriée.
             - Ne supprime ou ne change **aucun titre de section**, même si certaines informations manquent, indique “Non mentionné” si nécessaire.
-            - Si l’article est très technique, détaille les éléments dans la section "CONTENU / FAITS DÉTAILLÉS".
+            - Si l’rssItem est très technique, détaille les éléments dans la section "CONTENU / FAITS DÉTAILLÉS".
             
-            URL de l’article : %s
+            URL de l’rssItem : %s
             
             """;
 
@@ -73,7 +73,7 @@ public class MistralAgent implements ArticleAnalyzer {
 
 
     @Override
-    public String analyzeArticle(Article article) {
-        return this.chatModel.call(userPrompt.formatted(article.getUrl()));
+    public String analyzeArticle(RssItem rssItem) {
+        return this.chatModel.call(userPrompt.formatted(rssItem.getUrl()));
     }
 }

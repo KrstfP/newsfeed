@@ -21,7 +21,6 @@ function onAnalyze(article: Article) {
 
 <template>
   <div>
-    <h1>Today</h1>
     <n-list>
       <ArticleItem
         v-for="article in articles"

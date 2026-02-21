@@ -3,22 +3,20 @@ package com.krstf.newsfeed.domain.models;
 import java.time.Instant;
 import java.util.UUID;
 
+/**
+ * Represents a request to analyze an article. Contains information about the article being analyzed,
+ * the status of the analysis, and timestamps for when the request was created and last updated.
+ */
 public class AnalysisRequest {
     private final UUID id;
     private final UUID articleId;
-    private AnalysisStatus status;
+    private AnalysisRequestStatus status;
     private Instant createdAt;
     private Instant updatedAt;
     private Long version;
 
-    public AnalysisRequest(UUID articleId) {
-        this.id = UUID.randomUUID();
-        this.articleId = articleId;
-        this.status = AnalysisStatus.PENDING;
-        this.version = 0L;
-    }
 
-    public AnalysisRequest(UUID id, UUID articleId, AnalysisStatus status, Instant createdAt, Instant updatedAt, Long version) {
+    public AnalysisRequest(UUID id, UUID articleId, AnalysisRequestStatus status, Instant createdAt, Instant updatedAt, Long version) {
         this.id = id;
         this.articleId = articleId;
         this.status = status;
@@ -28,31 +26,31 @@ public class AnalysisRequest {
     }
 
     public void start() {
-        if (this.status != AnalysisStatus.PENDING) {
+        if (this.status != AnalysisRequestStatus.PENDING) {
             throw new IllegalStateException("Cannot start analysis request that is not in PENDING status.");
         }
-        this.status = AnalysisStatus.IN_PROGRESS;
+        this.status = AnalysisRequestStatus.IN_PROGRESS;
     }
 
     public void complete() {
-        if (this.status != AnalysisStatus.IN_PROGRESS) {
+        if (this.status != AnalysisRequestStatus.IN_PROGRESS) {
             throw new IllegalStateException("Cannot complete analysis request that is not in IN_PROGRESS status.");
         }
-        this.status = AnalysisStatus.COMPLETED;
+        this.status = AnalysisRequestStatus.COMPLETED;
     }
 
     public void fail() {
-        if (this.status != AnalysisStatus.IN_PROGRESS) {
+        if (this.status != AnalysisRequestStatus.IN_PROGRESS) {
             throw new IllegalStateException("Cannot fail analysis request that is not in IN_PROGRESS status.");
         }
-        this.status = AnalysisStatus.FAILED;
+        this.status = AnalysisRequestStatus.FAILED;
     }
 
     public UUID getArticleId() {
         return articleId;
     }
 
-    public AnalysisStatus getStatus() {
+    public AnalysisRequestStatus getStatus() {
         return status;
     }
 

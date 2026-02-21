@@ -55,7 +55,7 @@ svg {
 }
 
 .line {
-  stroke: black;
+  stroke: blue;
   stroke-width: 1;
 }
 </style>

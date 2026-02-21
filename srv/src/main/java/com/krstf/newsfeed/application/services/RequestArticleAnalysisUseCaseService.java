@@ -1,7 +1,7 @@
 package com.krstf.newsfeed.application.services;
 
 import com.krstf.newsfeed.domain.models.AnalysisRequest;
-import com.krstf.newsfeed.domain.models.Article;
+import com.krstf.newsfeed.domain.models.RssItem;
 import com.krstf.newsfeed.port.inbound.RequestArticleAnalysisUseCase;
 import com.krstf.newsfeed.port.inbound.dto.RequestDto;
 import com.krstf.newsfeed.port.inbound.dto.RequestMapper;
@@ -35,7 +35,7 @@ public class RequestArticleAnalysisUseCaseService implements RequestArticleAnaly
             return requestMapper.toDto(analysisRequest.get());
         }
         RequestDto requestDto = requestMapper.toDto(analysisRequestQueue.add(articleId.toString()));
-        Optional<Article> article = getArticle.getArticleById(articleId);
+        Optional<RssItem> article = getArticle.getArticleById(articleId);
         article.ifPresent(notifier::notifyAnalysisRequested);
         return requestDto;
     }

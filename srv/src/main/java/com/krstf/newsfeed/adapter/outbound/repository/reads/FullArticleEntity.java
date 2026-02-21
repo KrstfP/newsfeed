@@ -19,6 +19,7 @@ public class FullArticleEntity {
     private String content;
     private String url;
     private Date publishedAt;
+    private String analysis = null;
 
     @Indexed
     private String sourceId;
@@ -48,6 +49,7 @@ public class FullArticleEntity {
             String content,
             String url,
             Date publishedAt,
+            String analysis,
             String sourceId,
             String sourceName,
             List<String> categories,
@@ -140,6 +142,15 @@ public class FullArticleEntity {
 
     public void setAnalysisRequestStatus(AnalysisRequestStatus analysisRequestStatus) {
         this.analysisRequestStatus = analysisRequestStatus;
+    }
+
+    public String getAnalysis() {
+        return analysis;
+    }
+    
+
+    public void setAnalysis(String analysis) {
+        this.analysis = analysis;
     }
 
     public Instant getCreatedAt() {
