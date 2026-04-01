@@ -19,15 +19,17 @@ public class ArticleAPI {
 
     private final GetFullArticle getFullArticle;
     private final RequestArticleAnalysisUseCase requestArticleAnalysisUseCase;
+    private final CurrentUser currentUser;
 
-    public ArticleAPI(GetFullArticle getFullArticle, RequestArticleAnalysisUseCase requestArticleAnalysisUseCase) {
+    public ArticleAPI(GetFullArticle getFullArticle, RequestArticleAnalysisUseCase requestArticleAnalysisUseCase, CurrentUser currentUser) {
         this.getFullArticle = getFullArticle;
         this.requestArticleAnalysisUseCase = requestArticleAnalysisUseCase;
+        this.currentUser = currentUser;
     }
 
     @GetMapping("/articles")
     public ResponseEntity<List<FullArticleDto>> getArticles() {
-        return ResponseEntity.ok(getFullArticle.getFullArticles());
+        return ResponseEntity.ok(getFullArticle.getFullArticles(currentUser.getUserId()));
     }
 
     @GetMapping("/article/{articleId}/analyze")
