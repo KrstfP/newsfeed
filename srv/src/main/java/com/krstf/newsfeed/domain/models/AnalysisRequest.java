@@ -26,23 +26,14 @@ public class AnalysisRequest {
     }
 
     public void start() {
-        if (this.status != AnalysisRequestStatus.PENDING) {
-            throw new IllegalStateException("Cannot start analysis request that is not in PENDING status.");
-        }
         this.status = AnalysisRequestStatus.IN_PROGRESS;
     }
 
     public void complete() {
-        if (this.status != AnalysisRequestStatus.IN_PROGRESS) {
-            throw new IllegalStateException("Cannot complete analysis request that is not in IN_PROGRESS status.");
-        }
         this.status = AnalysisRequestStatus.COMPLETED;
     }
 
     public void fail() {
-        if (this.status != AnalysisRequestStatus.IN_PROGRESS) {
-            throw new IllegalStateException("Cannot fail analysis request that is not in IN_PROGRESS status.");
-        }
         this.status = AnalysisRequestStatus.FAILED;
     }
 

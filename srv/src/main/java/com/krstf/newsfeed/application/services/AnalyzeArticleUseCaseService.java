@@ -32,31 +32,30 @@ public class AnalyzeArticleUseCaseService {
         if (nextPendingRequest.isEmpty()) {
             return;
         }
-        AnalysisRequest request = nextPendingRequest.get();
 
+        AnalysisRequest request = nextPendingRequest.get();
         request.start();
-        request = analysisRequestQueue.save(request);
+        analysisRequestQueue.save(request);
 
         Optional<RssItem> article = getArticle.getArticleById(request.getArticleId());
         article.ifPresent(notifier::notifyAnalysisStarted);
+
         if (article.isEmpty()) {
             request.fail();
             analysisRequestQueue.save(request);
-            article.ifPresent(notifier::notifyAnalysisFailed);
             return;
         }
+
+        RssItem rssItem = article.get();
         try {
-            System.out.println("STARTING ANALYSIS FOR ARTICLE: " + article.get().getId());
-            String analysis = articleAnalyzer.analyzeArticle(article.get());
-            System.out.println("COMPLETED ANALYSIS FOR ARTICLE: " + article.get().getId());
+            String analysis = articleAnalyzer.analyzeArticle(rssItem);
             request.complete();
-            request = analysisRequestQueue.save(request);
-            article.ifPresent(a -> notifier.notifyAnalysisCompleted(a, analysis));
+            analysisRequestQueue.save(request);
+            notifier.notifyAnalysisCompleted(rssItem, analysis);
         } catch (Exception e) {
-            System.out.println("FAILED ANALYSIS FOR ARTICLE: " + article.get().getId() + " with error: " + e.getMessage());
             request.fail();
             analysisRequestQueue.save(request);
-            article.ifPresent(a -> notifier.notifyAnalysisFailed(a));
+            notifier.notifyAnalysisFailed(rssItem);
         }
     }
 }
