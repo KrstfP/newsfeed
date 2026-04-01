@@ -9,10 +9,12 @@ import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.io.SyndFeedInput;
 import com.rometools.rome.io.XmlReader;
 import org.jsoup.Jsoup;
+import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
 
+@Service
 public class ArticleRssLoader implements ArticleLoader {
     @Override
     public List<RssItem> loadArticles(RssFeedSource rssFeedSource) {
