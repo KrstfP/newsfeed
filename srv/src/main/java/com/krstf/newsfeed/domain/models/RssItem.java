@@ -21,6 +21,8 @@ public class RssItem {
     private final String sourceName;
 
     List<String> categories;
+    private AnalysisRequestStatus analysisStatus = AnalysisRequestStatus.NOT_REQUESTED;
+    private String analysis = null;
 
     public UUID getId() {
         return id;
@@ -77,6 +79,39 @@ public class RssItem {
 
     public void setCategories(List<String> categories) {
         this.categories = categories;
+    }
+
+    public AnalysisRequestStatus getAnalysisStatus() {
+        return analysisStatus;
+    }
+
+    public void setAnalysisStatus(AnalysisRequestStatus analysisStatus) {
+        this.analysisStatus = analysisStatus;
+    }
+
+    public String getAnalysis() {
+        return analysis;
+    }
+
+    public void setAnalysis(String analysis) {
+        this.analysis = analysis;
+    }
+
+    public void requestAnalysis() {
+        this.analysisStatus = AnalysisRequestStatus.PENDING;
+    }
+
+    public void startAnalysis() {
+        this.analysisStatus = AnalysisRequestStatus.IN_PROGRESS;
+    }
+
+    public void completeAnalysis(String analysis) {
+        this.analysisStatus = AnalysisRequestStatus.COMPLETED;
+        this.analysis = analysis;
+    }
+
+    public void failAnalysis() {
+        this.analysisStatus = AnalysisRequestStatus.FAILED;
     }
 
 }

@@ -7,4 +7,5 @@ import java.util.UUID;
 
 public interface GetArticle {
     Optional<RssItem> getArticleById(UUID articleId);
+    Optional<RssItem> getNextPendingArticle();
 }

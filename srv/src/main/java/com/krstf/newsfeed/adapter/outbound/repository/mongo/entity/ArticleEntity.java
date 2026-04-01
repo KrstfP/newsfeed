@@ -1,9 +1,12 @@
 package com.krstf.newsfeed.adapter.outbound.repository.mongo.entity;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -29,7 +32,15 @@ public class ArticleEntity {
     @Indexed
     private List<String> categories;
 
-    private AnalysisEntity analysis;
+    @Indexed
+    private String analysisStatus = "NOT_REQUESTED";
+    private String analysis = null;
+
+    @LastModifiedDate
+    private Instant updatedAt;
+
+    @Version
+    private Long version;
 
     public ArticleEntity(
             String id,
@@ -82,6 +93,22 @@ public class ArticleEntity {
 
     public List<String> getCategories() {
         return categories;
+    }
+
+    public String getAnalysisStatus() {
+        return analysisStatus;
+    }
+
+    public void setAnalysisStatus(String analysisStatus) {
+        this.analysisStatus = analysisStatus;
+    }
+
+    public String getAnalysis() {
+        return analysis;
+    }
+
+    public void setAnalysis(String analysis) {
+        this.analysis = analysis;
     }
 
 }
