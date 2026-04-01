@@ -1,5 +1,6 @@
 package com.krstf.newsfeed.application.services;
 
+import com.krstf.newsfeed.domain.models.AnalysisRequestStatus;
 import com.krstf.newsfeed.domain.models.RssItem;
 import com.krstf.newsfeed.port.inbound.RequestArticleAnalysisUseCase;
 import com.krstf.newsfeed.port.inbound.dto.RequestDto;
@@ -24,6 +25,11 @@ public class RequestArticleAnalysisUseCaseService implements RequestArticleAnaly
     public RequestDto requestAnalysis(UUID articleId) {
         RssItem article = getArticle.getArticleById(articleId)
                 .orElseThrow(() -> new RuntimeException("Article not found: " + articleId));
+
+        if (article.getAnalysisStatus() == AnalysisRequestStatus.IN_PROGRESS) {
+            return new RequestDto(articleId.toString(), article.getAnalysisStatus().name());
+        }
+
         article.requestAnalysis();
         saveArticle.saveArticle(article);
         return new RequestDto(articleId.toString(), article.getAnalysisStatus().name());
