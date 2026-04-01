@@ -33,6 +33,9 @@ public class ArticleEntity {
     private List<String> categories;
 
     @Indexed
+    private String userId;
+
+    @Indexed
     private String analysisStatus = "NOT_REQUESTED";
     private String analysis = null;
 
@@ -109,6 +112,14 @@ public class ArticleEntity {
 
     public void setAnalysis(String analysis) {
         this.analysis = analysis;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
 }

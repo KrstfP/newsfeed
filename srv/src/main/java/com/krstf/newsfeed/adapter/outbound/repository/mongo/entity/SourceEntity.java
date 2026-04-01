@@ -1,6 +1,7 @@
 package com.krstf.newsfeed.adapter.outbound.repository.mongo.entity;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.net.URI;
@@ -14,27 +15,34 @@ public class SourceEntity {
     private final String name;
     private final String description;
 
-    public SourceEntity(String id, URI rssFeedUrl, String name, String description) {
+    @Indexed
+    private final String userId;
+
+    public SourceEntity(String id, URI rssFeedUrl, String name, String description, String userId) {
         this.id = id;
         this.rssFeedUrl = rssFeedUrl;
         this.name = name;
         this.description = description;
+        this.userId = userId;
     }
 
-    public final UUID getId() {
+    public UUID getId() {
         return UUID.fromString(id);
     }
 
-    public final URI getRssFeedUrl() {
+    public URI getRssFeedUrl() {
         return rssFeedUrl;
     }
 
-    public final String getName() {
+    public String getName() {
         return name;
     }
 
-    public final String getDescription() {
+    public String getDescription() {
         return description;
     }
 
+    public String getUserId() {
+        return userId;
+    }
 }

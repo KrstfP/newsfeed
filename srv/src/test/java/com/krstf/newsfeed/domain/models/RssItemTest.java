@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class RssItemTest {
 
     private RssItem anyItem() {
-        return new RssItem(UUID.randomUUID(), "titre", "contenu", "http://example.com", new Date(), UUID.randomUUID(), "source");
+        return new RssItem(UUID.randomUUID(), "titre", "contenu", "http://example.com", new Date(), UUID.randomUUID(), "source", "test-user");
     }
 
     @Test

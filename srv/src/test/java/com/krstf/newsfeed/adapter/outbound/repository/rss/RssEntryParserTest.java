@@ -16,7 +16,7 @@ class RssEntryParserTest {
     private final RssEntryParser parser = new RssEntryParser();
 
     private RssFeedSource anySource() {
-        return new RssFeedSource(URI.create("http://example.com/feed"), "Source", "desc");
+        return new RssFeedSource(URI.create("http://example.com/feed"), "Source", "desc", "test-user");
     }
 
     private SyndEntry entryWithContents(String html) {

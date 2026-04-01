@@ -23,6 +23,7 @@ public class RssItem {
     List<String> categories;
     private AnalysisRequestStatus analysisStatus = AnalysisRequestStatus.NOT_REQUESTED;
     private String analysis = null;
+    private final String userId;
 
     public UUID getId() {
         return id;
@@ -56,18 +57,19 @@ public class RssItem {
         return sourceName;
     }
 
-    public RssItem(String title, String content, String url, Date publishedAt, UUID sourceId, String sourceName) {
+    public RssItem(String title, String content, String url, Date publishedAt, UUID sourceId, String sourceName, String userId) {
         this.id = UUID.nameUUIDFromBytes(
-                url.getBytes(StandardCharsets.UTF_8));
+                (userId + url).getBytes(StandardCharsets.UTF_8));
         this.title = title;
         this.content = content;
         this.url = url;
         this.sourceId = sourceId;
         this.sourceName = sourceName;
         this.publishedAt = publishedAt;
+        this.userId = userId;
     }
 
-    public RssItem(UUID id, String title, String content, String url, Date publishedAt, UUID sourceId, String sourceName) {
+    public RssItem(UUID id, String title, String content, String url, Date publishedAt, UUID sourceId, String sourceName, String userId) {
         this.id = id;
         this.title = title;
         this.content = content;
@@ -75,10 +77,15 @@ public class RssItem {
         this.sourceId = sourceId;
         this.sourceName = sourceName;
         this.publishedAt = publishedAt;
+        this.userId = userId;
     }
 
     public void setCategories(List<String> categories) {
         this.categories = categories;
+    }
+
+    public String getUserId() {
+        return userId;
     }
 
     public AnalysisRequestStatus getAnalysisStatus() {

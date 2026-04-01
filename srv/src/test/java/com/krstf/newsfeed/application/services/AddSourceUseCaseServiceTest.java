@@ -22,7 +22,7 @@ class AddSourceUseCaseServiceTest {
     @InjectMocks AddSourceUseCaseService service;
 
     private RssFeedSource savedSource(String url, String name, String description) {
-        return new RssFeedSource(java.net.URI.create(url), name, description);
+        return new RssFeedSource(java.net.URI.create(url), name, description, "test-user");
     }
 
     // --- URL invalide ---

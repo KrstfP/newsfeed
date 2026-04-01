@@ -29,7 +29,7 @@ class RequestArticleAnalysisUseCaseServiceTest {
     @InjectMocks RequestArticleAnalysisUseCaseService service;
 
     private RssItem articleWithStatus(UUID id, AnalysisRequestStatus status) {
-        RssItem article = new RssItem(id, "titre", "contenu", "http://example.com", new Date(), UUID.randomUUID(), "source");
+        RssItem article = new RssItem(id, "titre", "contenu", "http://example.com", new Date(), UUID.randomUUID(), "source", "test-user");
         article.setAnalysisStatus(status);
         return article;
     }

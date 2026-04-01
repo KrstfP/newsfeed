@@ -27,7 +27,7 @@ public class AddSourceUseCaseService implements AddSourceUseCase {
             throw new IllegalArgumentException("Invalid URL: " + request.url(), e);
         }
 
-        RssFeedSource source = new RssFeedSource(uri, request.name(), request.description());
+        RssFeedSource source = new RssFeedSource(uri, request.name(), request.description(), "");
         RssFeedSource saved = saveSource.save(source);
         return new SourceDto(saved.getId().toString(), saved.getName(), saved.getRssFeedUrl().toString(), saved.getDescription());
     }

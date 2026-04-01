@@ -29,7 +29,7 @@ class AnalyzeArticleUseCaseServiceTest {
     @InjectMocks AnalyzeArticleUseCaseService service;
 
     private RssItem anyArticle() {
-        return new RssItem(UUID.randomUUID(), "titre", "contenu", "http://example.com", new Date(), UUID.randomUUID(), "source");
+        return new RssItem(UUID.randomUUID(), "titre", "contenu", "http://example.com", new Date(), UUID.randomUUID(), "source", "test-user");
     }
 
     // --- file vide ---

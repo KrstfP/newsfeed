@@ -21,7 +21,8 @@ public class EntityMapper {
                 entity.getUrl(),
                 entity.getPublishedAt(),
                 entity.getSourceId(),
-                entity.getSourceName()
+                entity.getSourceName(),
+                entity.getUserId()
         );
         rssItem.setCategories(entity.getCategories());
         rssItem.setAnalysisStatus(AnalysisRequestStatus.valueOf(entity.getAnalysisStatus()));
@@ -40,6 +41,7 @@ public class EntityMapper {
                 rssItem.getSourceName(),
                 rssItem.getCategories()
         );
+        entity.setUserId(rssItem.getUserId());
         entity.setAnalysisStatus(rssItem.getAnalysisStatus().name());
         entity.setAnalysis(rssItem.getAnalysis());
         return entity;
@@ -62,9 +64,11 @@ public class EntityMapper {
 
     public RssFeedSource toDomain(SourceEntity entity) {
         return new RssFeedSource(
+                entity.getId(),
                 entity.getRssFeedUrl(),
                 entity.getName(),
-                entity.getDescription()
+                entity.getDescription(),
+                entity.getUserId()
         );
     }
 
@@ -73,7 +77,8 @@ public class EntityMapper {
                 rssFeedSource.getId().toString(),
                 rssFeedSource.getRssFeedUrl(),
                 rssFeedSource.getName(),
-                rssFeedSource.getDescription()
+                rssFeedSource.getDescription(),
+                rssFeedSource.getUserId()
         );
     }
 }

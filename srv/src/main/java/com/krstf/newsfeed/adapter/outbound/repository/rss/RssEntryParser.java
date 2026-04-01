@@ -18,7 +18,8 @@ class RssEntryParser {
                 entry.getLink(),
                 extractPublishedDate(entry),
                 source.getId(),
-                source.getName()
+                source.getName(),
+                source.getUserId()
         );
         rssItem.setCategories(extractCategories(entry));
         return rssItem;
