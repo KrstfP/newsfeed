@@ -5,6 +5,7 @@ srv/.mvn/wrapper/maven-wrapper.jar
 **/src/test/**/target/
 srv/target
 srv/src/main/resources/static
+srv/src/main/resources/firebase.json
 
 ### STS ###
 srv/.apt_generated
