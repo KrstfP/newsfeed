@@ -1,5 +1,6 @@
 package com.krstf.newsfeed;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -9,11 +10,22 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.util.List;
 
 @Configuration
 public class SecurityConfig {
+
+    @Autowired(required = false)
+    private FirebaseAuthenticationFilter firebaseAuthFilter;
+
+    @Autowired(required = false)
+    private DevAuthenticationFilter devAuthFilter;
+
+    private OncePerRequestFilter authFilter() {
+        return devAuthFilter != null ? devAuthFilter : firebaseAuthFilter;
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -24,7 +36,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/app/**").permitAll()
                         .anyRequest().authenticated()
-                ).addFilterBefore(new FirebaseAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+                ).addFilterBefore(authFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
