@@ -17,8 +17,8 @@ public class GetSourcesUseCaseService implements GetSourcesUseCase {
     }
 
     @Override
-    public List<SourceDto> getSources() {
-        return getSource.getAllSources().stream()
+    public List<SourceDto> getSources(String userId) {
+        return getSource.getSourcesByUser(userId).stream()
                 .map(s -> new SourceDto(
                         s.getId().toString(),
                         s.getName(),

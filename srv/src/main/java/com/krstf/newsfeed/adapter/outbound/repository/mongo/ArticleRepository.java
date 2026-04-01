@@ -6,7 +6,6 @@ import com.krstf.newsfeed.port.outbound.repository.FullArticleDto;
 import com.krstf.newsfeed.port.outbound.repository.GetArticle;
 import com.krstf.newsfeed.port.outbound.repository.GetFullArticle;
 import com.krstf.newsfeed.port.outbound.repository.SaveArticle;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -41,8 +40,8 @@ public class ArticleRepository implements GetArticle, SaveArticle, GetFullArticl
     }
 
     @Override
-    public List<FullArticleDto> getFullArticles() {
-        return springMongoArticleRepository.findAll(Sort.by(Sort.Direction.DESC, "publishedAt"))
+    public List<FullArticleDto> getFullArticles(String userId) {
+        return springMongoArticleRepository.findAllByUserIdOrderByPublishedAtDesc(userId)
                 .stream()
                 .map(entityMapper::toFullArticleDto)
                 .toList();

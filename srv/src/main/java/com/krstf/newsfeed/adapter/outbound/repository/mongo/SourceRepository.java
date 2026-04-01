@@ -24,6 +24,11 @@ public class SourceRepository implements GetSource, SaveSource {
     }
 
     @Override
+    public List<RssFeedSource> getSourcesByUser(String userId) {
+        return springMongoSourceRepository.findAllByUserId(userId).stream().map(entityMapper::toDomain).toList();
+    }
+
+    @Override
     public RssFeedSource save(RssFeedSource source) {
         return entityMapper.toDomain(springMongoSourceRepository.save(entityMapper.toEntity(source)));
     }

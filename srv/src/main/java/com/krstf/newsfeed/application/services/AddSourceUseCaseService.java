@@ -19,7 +19,7 @@ public class AddSourceUseCaseService implements AddSourceUseCase {
     }
 
     @Override
-    public SourceDto addSource(CreateSourceRequest request) {
+    public SourceDto addSource(CreateSourceRequest request, String userId) {
         URI uri;
         try {
             uri = URI.create(request.url());
@@ -27,7 +27,7 @@ public class AddSourceUseCaseService implements AddSourceUseCase {
             throw new IllegalArgumentException("Invalid URL: " + request.url(), e);
         }
 
-        RssFeedSource source = new RssFeedSource(uri, request.name(), request.description(), "");
+        RssFeedSource source = new RssFeedSource(uri, request.name(), request.description(), userId);
         RssFeedSource saved = saveSource.save(source);
         return new SourceDto(saved.getId().toString(), saved.getName(), saved.getRssFeedUrl().toString(), saved.getDescription());
     }

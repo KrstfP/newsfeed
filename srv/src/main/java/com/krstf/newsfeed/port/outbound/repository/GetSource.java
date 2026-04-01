@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface GetSource {
     List<RssFeedSource> getAllSources();
+    List<RssFeedSource> getSourcesByUser(String userId);
 }

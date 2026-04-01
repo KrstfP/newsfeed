@@ -5,5 +5,5 @@ import com.krstf.newsfeed.port.inbound.dto.SourceDto;
 import java.util.List;
 
 public interface GetSourcesUseCase {
-    List<SourceDto> getSources();
+    List<SourceDto> getSources(String userId);
 }
