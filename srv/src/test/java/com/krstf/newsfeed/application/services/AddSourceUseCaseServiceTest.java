@@ -31,7 +31,7 @@ class AddSourceUseCaseServiceTest {
     void addSource_invalidUrl_throwsIllegalArgument() {
         CreateSourceRequest request = new CreateSourceRequest("not a valid url", "Source", null);
 
-        assertThrows(IllegalArgumentException.class, () -> service.addSource(request));
+        assertThrows(IllegalArgumentException.class, () -> service.addSource(request, "test-user"));
         verifyNoInteractions(saveSource);
     }
 
@@ -42,7 +42,7 @@ class AddSourceUseCaseServiceTest {
         CreateSourceRequest request = new CreateSourceRequest("https://example.com/feed", "Le Monde", "desc");
         when(saveSource.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        service.addSource(request);
+        service.addSource(request, "test-user");
 
         verify(saveSource).save(any(RssFeedSource.class));
     }
@@ -52,7 +52,7 @@ class AddSourceUseCaseServiceTest {
         CreateSourceRequest request = new CreateSourceRequest("https://example.com/feed", "Le Monde", "description");
         when(saveSource.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        SourceDto result = service.addSource(request);
+        SourceDto result = service.addSource(request, "test-user");
 
         assertEquals("Le Monde", result.name());
         assertEquals("https://example.com/feed", result.url());
@@ -65,7 +65,7 @@ class AddSourceUseCaseServiceTest {
         CreateSourceRequest request = new CreateSourceRequest("https://example.com/feed", "Le Monde", null);
         when(saveSource.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        SourceDto result = service.addSource(request);
+        SourceDto result = service.addSource(request, "test-user");
 
         assertEquals("Le Monde", result.name());
         assertNull(result.description());
