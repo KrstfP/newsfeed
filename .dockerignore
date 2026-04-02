@@ -1,0 +1,6 @@
+front/node_modules
+srv/target
+.git
+.env
+*.env
+front/dist
