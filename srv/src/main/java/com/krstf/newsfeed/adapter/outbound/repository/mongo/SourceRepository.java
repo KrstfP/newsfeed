@@ -2,7 +2,6 @@ package com.krstf.newsfeed.adapter.outbound.repository.mongo;
 
 import com.krstf.newsfeed.adapter.outbound.repository.mongo.mappers.EntityMapper;
 import com.krstf.newsfeed.domain.models.RssFeedSource;
-import com.krstf.newsfeed.domain.models.RssFeedSourceStatus;
 import com.krstf.newsfeed.port.outbound.repository.GetSource;
 import com.krstf.newsfeed.port.outbound.repository.SaveSource;
 import org.springframework.stereotype.Repository;
@@ -23,20 +22,20 @@ public class SourceRepository implements GetSource, SaveSource {
 
     @Override
     public List<RssFeedSource> getAllSources() {
-        return springMongoSourceRepository.findAllByStatus(RssFeedSourceStatus.ACTIVE.name())
+        return springMongoSourceRepository.findAllActive()
                 .stream().map(entityMapper::toDomain).toList();
     }
 
     @Override
     public List<RssFeedSource> getSourcesByUser(String userId) {
-        return springMongoSourceRepository.findAllByUserIdAndStatus(userId, RssFeedSourceStatus.ACTIVE.name())
+        return springMongoSourceRepository.findAllByUserIdActive(userId)
                 .stream().map(entityMapper::toDomain).toList();
     }
 
     @Override
     public Optional<RssFeedSource> getSourceById(UUID id, String userId) {
         return springMongoSourceRepository
-                .findByIdAndUserIdAndStatus(id.toString(), userId, RssFeedSourceStatus.ACTIVE.name())
+                .findByIdAndUserIdActive(id.toString(), userId)
                 .map(entityMapper::toDomain);
     }
 
