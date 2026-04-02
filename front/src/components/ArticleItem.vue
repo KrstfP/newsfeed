@@ -1,233 +1,195 @@
 <script setup lang="ts">
-import type { Article } from "../domain/Article";
-import { NText, NTag, NButton, NIcon, NEllipsis, NSpace } from "naive-ui";
+import { ref } from 'vue'
+import type { Article } from '../domain/Article'
+import { NButton, NIcon, NTag } from 'naive-ui'
 import {
   BrainCircuit20Filled,
   Clock20Regular,
+  ArrowSync20Regular,
   CheckmarkCircle20Regular,
   DismissCircle20Regular,
-} from "@vicons/fluent";
+} from '@vicons/fluent'
 
-defineProps<{
-  article: Article;
-}>();
+const props = defineProps<{ article: Article }>()
+const emit = defineEmits<{ (e: 'analyze', article: Article): void }>()
 
-const emit = defineEmits<{
-  (e: "analyze", article: Article): void;
-}>();
-
-// Mapping catégories → type Naive UI (theme-safe)
-const tagColors: Record<
-  string,
-  "default" | "primary" | "success" | "info" | "warning" | "error"
-> = {
-  Tech: "primary",
-  Business: "success",
-  AI: "info",
-  Security: "error",
-};
+const expanded = ref(false)
 
 const statusMap = {
-  NOT_REQUESTED: {
-    icon: BrainCircuit20Filled,
-    type: "info",
-    loading: false,
-  },
-  PENDING: {
-    icon: Clock20Regular,
-    type: "warning",
-    loading: false,
-  },
-  IN_PROGRESS: {
-    icon: Clock20Regular,
-    type: "info",
-    loading: true,
-  },
-  COMPLETED: {
-    icon: CheckmarkCircle20Regular,
-    type: "success",
-    loading: false,
-  },
-  FAILED: {
-    icon: DismissCircle20Regular,
-    type: "error",
-    loading: false,
-  },
-} as const;
+  NOT_REQUESTED: { icon: BrainCircuit20Filled,    type: 'default'  as const, loading: false },
+  PENDING:       { icon: Clock20Regular,           type: 'warning'  as const, loading: false },
+  IN_PROGRESS:   { icon: ArrowSync20Regular,       type: 'info'     as const, loading: true  },
+  COMPLETED:     { icon: CheckmarkCircle20Regular, type: 'success'  as const, loading: false },
+  FAILED:        { icon: DismissCircle20Regular,   type: 'error'    as const, loading: false },
+}
+
+const tagColors: Record<string, 'default' | 'primary' | 'success' | 'info' | 'warning' | 'error'> = {
+  Tech: 'primary', Business: 'success', AI: 'info', Security: 'error',
+}
+
+const status = () => statusMap[props.article.analysisRequestStatus] ?? statusMap.NOT_REQUESTED
+
+const formattedDate = new Intl.DateTimeFormat('fr-FR', {
+  day: '2-digit', month: '2-digit',
+}).format(new Date(props.article.publishedAt))
 </script>
 
 <template>
-  <div class="article-container">
-    <div class="article-item">
-      <div class="cell source">
-        <n-ellipsis :tooltip="true">
-          <a
-            :href="article.url"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="source-link"
-          >
-            {{ article.source }}
-          </a>
-        </n-ellipsis>
-      </div>
+  <div class="row" :class="{ expanded }">
+    <!-- Source → link to article -->
+    <a
+      :href="article.url"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="source"
+      @click.stop
+    >{{ article.source }}</a>
 
-      <!-- Titre -->
-      <div class="cell content">
-        <n-button
-          size="tiny"
-          tertiary
-          :type="statusMap[article.analysisRequestStatus]?.type || 'info'"
-          :loading="statusMap[article.analysisRequestStatus]?.loading"
-          :disabled="statusMap[article.analysisRequestStatus]?.loading"
-          circle
-          @click="emit('analyze', article)"
-          class="analyze-btn"
-        >
-          <template #icon>
-            <n-icon>
-              <component :is="statusMap[article.analysisRequestStatus]?.icon" />
-            </n-icon>
-          </template>
-        </n-button>
-        <n-button
-          size="tiny"
-          circle
-          tertiary
-          :type="statusMap[article.analysisRequestStatus]?.type || 'info'"
-          :loading="statusMap[article.analysisRequestStatus]?.loading"
-          :disabled="statusMap[article.analysisRequestStatus]?.loading"
-          class="analyze-btn"
-        >
-          <template #icon>
-            <n-icon>
-              <Clock20Regular />
-            </n-icon>
-          </template>
-        </n-button>
-        <n-text depth="3">
-          <n-ellipsis :line-clamp="1" expand-trigger="click" :tooltip="false">
-            <span class="title-text">{{ article.title }}</span>
-            <span class="description"> • {{ article.description }}</span>
-            <n-space size="small" wrap class="tags">
-              <n-tag
-                v-for="category in article.categories"
-                :key="category"
-                :bordered="false"
-                :type="tagColors[category] || 'default'"
-                size="small"
-              >
-                {{ category }}
-              </n-tag>
-            </n-space>
-          </n-ellipsis>
-        </n-text>
-      </div>
+    <!-- Analysis icon button -->
+    <NButton
+      class="icon-btn"
+      size="tiny"
+      :type="status().type"
+      :loading="status().loading"
+      :disabled="status().loading"
+      circle
+      tertiary
+      @click.stop="emit('analyze', article)"
+    >
+      <template #icon>
+        <NIcon><component :is="status().icon" /></NIcon>
+      </template>
+    </NButton>
 
-      <!-- Date -->
-      <div class="cell date">
-        <n-text depth="3">
-          {{ new Date(article.publishedAt).toLocaleDateString() }}
-        </n-text>
-      </div>
+    <!-- Content: collapsed = single line, expanded = full -->
+    <div class="content" @click="expanded = !expanded">
+      <template v-if="!expanded">
+        <span class="title">{{ article.title }}</span>
+        <span class="sep"> · </span>
+        <span class="desc">{{ article.description }}</span>
+      </template>
+      <template v-else>
+        <div class="title title-block">{{ article.title }}</div>
+        <div class="desc desc-full">{{ article.description }}</div>
+        <div class="tags">
+          <NTag
+            v-for="cat in article.categories"
+            :key="cat"
+            size="small"
+            :bordered="false"
+            :type="tagColors[cat] ?? 'default'"
+          >{{ cat }}</NTag>
+        </div>
+      </template>
     </div>
+
+    <!-- Date -->
+    <span class="date">{{ formattedDate }}</span>
   </div>
+  <div class="row-sep" />
 </template>
 
 <style scoped>
-.article-container {
-  container-type: inline-size;
-}
-
-.article-item {
-  padding: 2px 0;
+.row {
   display: grid;
-  grid-template-columns: 100px 1fr 70px; /* source | date | actions | content */
-  align-items: start;
-  gap: 5px;
-}
-
-/* Ligne 1 : bouton + titre + source inline */
-.title-line {
-  display: block; /* flow normal */
-}
-
-.analyze-btn {
-  vertical-align: middle;
-  margin-right: 6px;
-}
-
-.title-text {
-  display: inline; /* texte continue avec source */
-  vertical-align: middle;
-  font-weight: bolder;
-  font-size: small;
-}
-
-.source {
-  color: inherit; /* theme-safe */
-  text-decoration: none;
-  font-weight: lighter;
-}
-
-.date {
-  font-weight: lighter;
-  font-size: xx-small;
-}
-
-/* Ligne 2 : description */
-.description {
-  text-align: left;
-  vertical-align: middle;
-  font-size: small;
-}
-
-.cell {
-  font-size: smaller;
-  font-weight: light;
-  overflow: hidden;
-  min-width: 0; /* ⚠️ TRÈS IMPORTANT avec grid */
-  vertical-align: top;
-}
-
-.source-link {
-  text-decoration: none;
-  color: inherit;
-}
-
-.cell.content {
-  display: flex;
+  grid-template-columns: 108px 26px 1fr 65px;
+  gap: 8px;
   align-items: center;
-  min-width: 0; /* obligatoire pour ellipsis en flex */
+  padding: 6px 0;
+  min-width: 0;
+}
+
+.row.expanded {
   align-items: start;
+  background: #f1f4ff;
+  border-radius: 4px;
+  padding: 6px 6px;
+  margin: 0 -6px;
 }
 
-.title-wrapper {
-  flex: 1;
-  min-width: 0; /* très important */
+.row-sep {
+  height: 1px;
+  background: #e8e8e8;
 }
 
-@container (max-width: 700px) {
-  .cell.date {
-    display: none;
-  }
-
-  .article-item {
-    grid-template-columns: 80px 1fr; /* date | actions + content */
-  }
+/* Source */
+.source {
+  font-size: 11px;
+  color: #aaa;
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-@container (max-width: 500px) {
-  .cell.source {
-    display: none;
-  }
-
-  .article-item {
-    grid-template-columns: 1fr; /* actions + content */
-  }
+.source:hover {
+  text-decoration: underline;
+  color: #888;
 }
+
+/* Icon button — fixed size via NButton tiny+circle */
+.icon-btn {
+  flex-shrink: 0;
+}
+
+/* Content cell */
+.content {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.row.expanded .content {
+  white-space: normal;
+  overflow: visible;
+}
+
+.title {
+  font-weight: 600;
+  color: #1e1e1e;
+  font-size: 12px;
+}
+
+.sep {
+  color: #bbb;
+}
+
+.desc {
+  color: #999;
+  font-size: 11px;
+}
+
+.title-block {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.desc-full {
+  display: block;
+  color: #666;
+  font-size: 11px;
+  margin-bottom: 6px;
+}
+
 .tags {
-  padding-top: 5px;
-  padding-bottom: 5px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+/* Date */
+.date {
+  font-size: 10px;
+  color: #aaa;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.row.expanded .date {
+  padding-top: 2px;
 }
 </style>
