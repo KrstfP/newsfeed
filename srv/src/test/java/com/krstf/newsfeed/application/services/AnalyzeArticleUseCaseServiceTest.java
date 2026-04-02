@@ -2,6 +2,9 @@ package com.krstf.newsfeed.application.services;
 
 import com.krstf.newsfeed.domain.models.AnalysisRequestStatus;
 import com.krstf.newsfeed.domain.models.RssItem;
+import com.krstf.newsfeed.port.outbound.notification.ArticleNotification;
+import com.krstf.newsfeed.port.outbound.notification.NotificationChangeType;
+import com.krstf.newsfeed.port.outbound.notification.NotificationObjectType;
 import com.krstf.newsfeed.port.outbound.notification.NotifyArticleStatusChange;
 import com.krstf.newsfeed.port.outbound.repository.ArticleAnalyzer;
 import com.krstf.newsfeed.port.outbound.repository.GetArticle;
@@ -99,6 +102,52 @@ class AnalyzeArticleUseCaseServiceTest {
         order.verify(saveArticle).saveArticle(article);      // après startAnalysis()
         order.verify(articleAnalyzer).analyzeArticle(article);
         order.verify(saveArticle).saveArticle(article);      // après failAnalysis()
+        order.verifyNoMoreInteractions();
+    }
+
+    // --- notifications ---
+
+    @Test
+    void execute_analysisSucceeds_notifiesAllTransitions() {
+        RssItem article = anyArticle();
+        when(getArticle.getNextPendingArticle()).thenReturn(Optional.of(article));
+        when(articleAnalyzer.analyzeArticle(article)).thenReturn("résumé");
+
+        service.execute();
+
+        InOrder order = inOrder(saveArticle, notifyStatusChange);
+        order.verify(saveArticle).saveArticle(article);
+        order.verify(notifyStatusChange).notify(new ArticleNotification(
+                article.getId(), NotificationObjectType.ARTICLE,
+                NotificationChangeType.ANALYSIS_STATUS_CHANGED,
+                "test-user", "PENDING", "IN_PROGRESS"));
+        order.verify(saveArticle).saveArticle(article);
+        order.verify(notifyStatusChange).notify(new ArticleNotification(
+                article.getId(), NotificationObjectType.ARTICLE,
+                NotificationChangeType.ANALYSIS_STATUS_CHANGED,
+                "test-user", "IN_PROGRESS", "COMPLETED"));
+        order.verifyNoMoreInteractions();
+    }
+
+    @Test
+    void execute_analyzerThrows_notifiesAllTransitions() {
+        RssItem article = anyArticle();
+        when(getArticle.getNextPendingArticle()).thenReturn(Optional.of(article));
+        when(articleAnalyzer.analyzeArticle(article)).thenThrow(new RuntimeException("timeout"));
+
+        service.execute();
+
+        InOrder order = inOrder(saveArticle, notifyStatusChange);
+        order.verify(saveArticle).saveArticle(article);
+        order.verify(notifyStatusChange).notify(new ArticleNotification(
+                article.getId(), NotificationObjectType.ARTICLE,
+                NotificationChangeType.ANALYSIS_STATUS_CHANGED,
+                "test-user", "PENDING", "IN_PROGRESS"));
+        order.verify(saveArticle).saveArticle(article);
+        order.verify(notifyStatusChange).notify(new ArticleNotification(
+                article.getId(), NotificationObjectType.ARTICLE,
+                NotificationChangeType.ANALYSIS_STATUS_CHANGED,
+                "test-user", "IN_PROGRESS", "FAILED"));
         order.verifyNoMoreInteractions();
     }
 }

@@ -17,11 +17,14 @@ front/ → Frontend Vue 3 + TypeScript
 - `domain/models/` — entités métier : `RssItem`, `RssFeedSource`, `AnalysisRequestStatus`
 - `port/inbound/` — use cases (interfaces) : `RequestArticleAnalysisUseCase`, `GetSourcesUseCase`, `AddSourceUseCase`
 - `port/outbound/repository/` — ports sortants : `GetArticle`, `SaveArticle`, `GetFullArticle`, `GetSource`, `SaveSource`, `ArticleAnalyzer`, `ArticleLoader`
+- `port/outbound/notification/` — ports sortants de notification : `NotifyArticleStatusChange`, `ArticleStatusChangeListener`, `ArticleNotification`, `NotificationObjectType`, `NotificationChangeType`
 - `application/services/` — implémentation des use cases
 - `adapter/inbound/rest/` — REST controllers (`/api/*`) + `CurrentUser`
+- `adapter/inbound/sse/` — Server-Sent Events : `SseController`, `SseDeliveryService`, `SpringEventBridgeAdapter`
 - `adapter/outbound/repository/mongo/` — persistance MongoDB (2 collections : `articles`, `sources`)
 - `adapter/outbound/repository/rss/` — chargement RSS (Rome + jsoup)
 - `adapter/outbound/mistral/` — appels Mistral via Spring AI
+- `adapter/outbound/notification/` — `SpringEventNotificationAdapter` (publie un `ApplicationEvent`)
 
 **Modèles du domaine :**
 - `RssItem` — article RSS avec userId, statut d'analyse (`AnalysisRequestStatus`) et contenu d'analyse. Méthodes de transition : `requestAnalysis()`, `startAnalysis()`, `completeAnalysis(String)`, `failAnalysis()`.
@@ -38,10 +41,31 @@ front/ → Frontend Vue 3 + TypeScript
 **Endpoints REST :**
 | Méthode | URL | Description |
 |---------|-----|-------------|
-| `GET` | `/api/articles` | Articles de l'utilisateur courant — retourne `analysis` (Markdown, nullable) |
+| `GET` | `/api/articles` | Articles de l'utilisateur courant — retourne `analysis` (Markdown, nullable). Params optionnels : `analyzed` (Boolean), `since` (YYYY-MM-DD) |
 | `GET` | `/api/article/{id}/analyze` | Demande d'analyse d'un article |
 | `GET` | `/api/sources` | Sources RSS de l'utilisateur courant |
 | `POST` | `/api/sources` | Ajoute une source RSS (`url` obligatoire, `name` obligatoire, `description` optionnel) |
+| `GET` | `/api/stream` | Flux SSE temps réel des changements de statut d'analyse (timeout 30 min) |
+
+**Notifications temps réel (SSE) :**
+
+Architecture en bus d'événements découplé — seul `SpringEventBridgeAdapter` connaît Spring Events :
+```
+Service applicatif
+  → NotifyArticleStatusChange (port outbound)
+    → SpringEventNotificationAdapter (publie ApplicationEvent)
+      → SpringEventBridgeAdapter (@EventListener → appelle ArticleStatusChangeListener)
+        → SseDeliveryService (ConcurrentHashMap<userId, SseEmitter>)
+```
+
+Payload SSE (champ `data`) :
+```json
+{ "articleId": "uuid", "objectType": "ARTICLE", "changeType": "ANALYSIS_STATUS_CHANGED", "oldValue": "PENDING", "newValue": "IN_PROGRESS" }
+```
+
+Transitions notifiées :
+- `RequestArticleAnalysisUseCaseService` : `previousStatus` → `PENDING` (sauf si `IN_PROGRESS`)
+- `AnalyzeArticleUseCaseService` : `PENDING` → `IN_PROGRESS`, puis `IN_PROGRESS` → `COMPLETED` ou `FAILED`
 
 **Lancer le backend :**
 ```bash

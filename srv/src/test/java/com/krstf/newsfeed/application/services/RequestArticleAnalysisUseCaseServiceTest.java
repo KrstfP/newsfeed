@@ -3,6 +3,9 @@ package com.krstf.newsfeed.application.services;
 import com.krstf.newsfeed.domain.models.AnalysisRequestStatus;
 import com.krstf.newsfeed.domain.models.RssItem;
 import com.krstf.newsfeed.port.inbound.dto.RequestDto;
+import com.krstf.newsfeed.port.outbound.notification.ArticleNotification;
+import com.krstf.newsfeed.port.outbound.notification.NotificationChangeType;
+import com.krstf.newsfeed.port.outbound.notification.NotificationObjectType;
 import com.krstf.newsfeed.port.outbound.notification.NotifyArticleStatusChange;
 import com.krstf.newsfeed.port.outbound.repository.GetArticle;
 import com.krstf.newsfeed.port.outbound.repository.SaveArticle;
@@ -10,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -19,6 +23,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -87,5 +92,46 @@ class RequestArticleAnalysisUseCaseServiceTest {
         RequestDto result = service.requestAnalysis(id);
 
         assertEquals(id.toString(), result.articleId());
+    }
+
+    // --- notifications ---
+
+    @ParameterizedTest
+    @EnumSource(value = AnalysisRequestStatus.class, names = {"NOT_REQUESTED", "PENDING", "COMPLETED", "FAILED"})
+    void requestAnalysis_anyOtherStatus_notifiesPreviousStatusToPending(AnalysisRequestStatus initialStatus) {
+        UUID id = UUID.randomUUID();
+        RssItem article = articleWithStatus(id, initialStatus);
+        when(getArticle.getArticleById(id)).thenReturn(Optional.of(article));
+
+        service.requestAnalysis(id);
+
+        verify(notifyStatusChange).notify(new ArticleNotification(
+                id, NotificationObjectType.ARTICLE,
+                NotificationChangeType.ANALYSIS_STATUS_CHANGED,
+                "test-user", initialStatus.name(), "PENDING"));
+    }
+
+    @Test
+    void requestAnalysis_alreadyInProgress_doesNotNotify() {
+        UUID id = UUID.randomUUID();
+        when(getArticle.getArticleById(id)).thenReturn(Optional.of(articleWithStatus(id, AnalysisRequestStatus.IN_PROGRESS)));
+
+        service.requestAnalysis(id);
+
+        verifyNoInteractions(notifyStatusChange);
+    }
+
+    @Test
+    void requestAnalysis_notifyAfterSave() {
+        UUID id = UUID.randomUUID();
+        RssItem article = articleWithStatus(id, AnalysisRequestStatus.NOT_REQUESTED);
+        when(getArticle.getArticleById(id)).thenReturn(Optional.of(article));
+
+        service.requestAnalysis(id);
+
+        InOrder order = inOrder(saveArticle, notifyStatusChange);
+        order.verify(saveArticle).saveArticle(article);
+        order.verify(notifyStatusChange).notify(any());
+        order.verifyNoMoreInteractions();
     }
 }
