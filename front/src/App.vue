@@ -13,6 +13,7 @@ import SourceList from './components/SourceList.vue'
 import LoginView from './components/LoginView.vue'
 
 const isDev = import.meta.env.VITE_AUTH_MODE === 'dev'
+const mobileMenuOpen = ref(false)
 
 // Injection de l'implémentation correcte selon le mode
 const authService: AuthService = isDev ? new DevAuthService() : new FirebaseAuthService()
@@ -62,11 +63,21 @@ async function signOut() {
   <template v-else>
     <Background />
     <div class="app-layout">
+      <!-- Topbar mobile -->
+      <div class="mobile-topbar">
+        <span class="mobile-logo">newsfeed</span>
+        <button class="hamburger" @click="mobileMenuOpen = !mobileMenuOpen">☰</button>
+      </div>
+
+      <!-- Backdrop fermeture sidebar -->
+      <div v-if="mobileMenuOpen" class="sidebar-backdrop" @click="mobileMenuOpen = false" />
+
       <Sidebar
+        :class="{ open: mobileMenuOpen }"
         :current-view="view"
         :user-name="displayName"
         :user-photo="photoUrl"
-        @navigate="v => view = v"
+        @navigate="v => { view = v; mobileMenuOpen = false }"
         @sign-out="signOut"
       />
       <main class="main">
@@ -105,5 +116,63 @@ async function signOut() {
   font-weight: 600;
   color: #ccc;
   letter-spacing: 0.01em;
+}
+
+/* Mobile topbar — masqué sur desktop */
+.mobile-topbar {
+  display: none;
+}
+
+.sidebar-backdrop {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .app-layout {
+    flex-direction: column;
+  }
+
+  .mobile-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 48px;
+    padding: 0 16px;
+    background: #f4f4f4;
+    border-bottom: 1px solid #e0e0e0;
+    flex-shrink: 0;
+    z-index: 10;
+  }
+
+  .mobile-logo {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e1e1e;
+    letter-spacing: 0.01em;
+  }
+
+  .hamburger {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    color: #555;
+    padding: 4px 8px;
+    border-radius: 4px;
+    line-height: 1;
+    transition: background 0.12s;
+  }
+
+  .hamburger:hover {
+    background: #e8e8e8;
+  }
+
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 199;
+  }
 }
 </style>
