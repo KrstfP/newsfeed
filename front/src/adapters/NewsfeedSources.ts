@@ -1,9 +1,14 @@
 import type { SourceRepository } from '../ports/SourceRepository'
 import type { Source } from '../domain/Source'
+import type { AuthService } from '../ports/AuthService'
 
 export class NewsfeedSourceRepository implements SourceRepository {
+  private auth: AuthService
+  constructor(auth: AuthService) { this.auth = auth }
+
   async getAll(): Promise<Source[]> {
-    const res = await fetch('http://localhost:8080/api/sources')
+    const headers = await this.auth.getAuthHeaders()
+    const res = await fetch('http://localhost:8080/api/sources', { headers })
     const data = await res.json()
     return data.map((item: any) => ({
       id: item.id,
@@ -14,9 +19,10 @@ export class NewsfeedSourceRepository implements SourceRepository {
   }
 
   async add(url: string, name: string, description?: string): Promise<void> {
+    const headers = await this.auth.getAuthHeaders()
     await fetch('http://localhost:8080/api/sources', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { ...headers, 'Content-Type': 'application/json' },
       body: JSON.stringify({ url, name, description }),
     })
   }

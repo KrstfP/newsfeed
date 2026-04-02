@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, inject, onMounted } from 'vue'
 import type { Article } from '../domain/Article'
+import type { AuthService } from '../ports/AuthService'
 import ArticleItem from './ArticleItem.vue'
 import { getArticles } from '../application/GetArticles'
 import { NewsfeedArticleRepository } from '../adapters/NewsfeedArticles'
 
+const authService = inject<AuthService>('authService')!
 const articles = ref<Article[]>([])
-const repo = new NewsfeedArticleRepository()
+const repo = new NewsfeedArticleRepository(authService)
 
 onMounted(async () => {
   articles.value = await getArticles(repo)

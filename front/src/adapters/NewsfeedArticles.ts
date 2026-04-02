@@ -1,15 +1,21 @@
 import type { ArticleRepository } from '../ports/ArticleRepository'
 import type { Article } from '../domain/Article'
 import type { RequestAnalysis } from '../ports/RequestAnalysis'
+import type { AuthService } from '../ports/AuthService'
 
 export class NewsfeedArticleRepository implements ArticleRepository, RequestAnalysis {
-  requestAnalysis(article: Article): Promise<void> {
-    return fetch(`http://localhost:8080/api/article/${article.id}/analyze`).then(() => {})
-  }
-  async getAll(): Promise<Article[]> {
-    const res = await fetch('http://localhost:8080/api/articles')
-    const data = await res.json()
+  private auth: AuthService
+  constructor(auth: AuthService) { this.auth = auth }
 
+  async requestAnalysis(article: Article): Promise<void> {
+    const headers = await this.auth.getAuthHeaders()
+    await fetch(`http://localhost:8080/api/article/${article.id}/analyze`, { headers })
+  }
+
+  async getAll(): Promise<Article[]> {
+    const headers = await this.auth.getAuthHeaders()
+    const res = await fetch('http://localhost:8080/api/articles', { headers })
+    const data = await res.json()
     return data.map((item: any) => ({
       id: item.id,
       title: item.title,
@@ -18,7 +24,7 @@ export class NewsfeedArticleRepository implements ArticleRepository, RequestAnal
       description: item.content,
       categories: item.categories,
       analysisRequestStatus: item.analysisRequestStatus,
-      publishedAt: new Date(item.publishedAt)
+      publishedAt: new Date(item.publishedAt),
     }))
   }
 }

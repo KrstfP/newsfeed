@@ -1,6 +1,14 @@
 <script setup lang="ts">
-defineProps<{ currentView: 'today' | 'sources' }>()
-defineEmits<{ (e: 'navigate', view: 'today' | 'sources'): void }>()
+defineProps<{
+  currentView: 'today' | 'sources'
+  userName?: string
+  userPhoto?: string
+}>()
+
+defineEmits<{
+  (e: 'navigate', view: 'today' | 'sources'): void
+  (e: 'signOut'): void
+}>()
 </script>
 
 <template>
@@ -28,8 +36,16 @@ defineEmits<{ (e: 'navigate', view: 'today' | 'sources'): void }>()
     </nav>
 
     <div class="spacer" />
-    <div class="sep" />
-    <button class="nav-item settings">Settings</button>
+
+    <div class="user-section">
+      <div class="sep" style="margin-bottom: 12px" />
+      <div class="user-row">
+        <img v-if="userPhoto" :src="userPhoto" class="user-avatar" referrerpolicy="no-referrer" />
+        <div v-else class="user-avatar placeholder">{{ userName?.[0]?.toUpperCase() ?? '?' }}</div>
+        <span class="user-name">{{ userName ?? 'Utilisateur' }}</span>
+        <button class="btn-signout" title="Se déconnecter" @click="$emit('signOut')">⎋</button>
+      </div>
+    </div>
   </aside>
 </template>
 
@@ -42,7 +58,7 @@ defineEmits<{ (e: 'navigate', view: 'today' | 'sources'): void }>()
   border-right: 1px solid #e0e0e0;
   display: flex;
   flex-direction: column;
-  padding: 0 0 12px 0;
+  padding: 0 0 16px 0;
 }
 
 .logo {
@@ -101,14 +117,57 @@ defineEmits<{ (e: 'navigate', view: 'today' | 'sources'): void }>()
   flex: 1;
 }
 
-.settings {
-  margin: 0 12px;
-  color: #999;
-  font-size: 12px;
+/* User section */
+.user-section {
+  padding: 0 12px 0;
 }
 
-.settings:hover {
-  background: #e8e8e8;
+.user-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+}
+
+.user-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  object-fit: cover;
+}
+
+.user-avatar.placeholder {
+  background: #2a6ef5;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-name {
+  font-size: 12px;
+  color: #555;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn-signout {
+  background: none;
+  border: none;
+  color: #aaa;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 2px;
+  flex-shrink: 0;
+  transition: color 0.12s;
+}
+
+.btn-signout:hover {
   color: #555;
 }
 </style>

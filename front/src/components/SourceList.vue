@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, inject, onMounted } from 'vue'
 import type { Source } from '../domain/Source'
+import type { AuthService } from '../ports/AuthService'
 import { getSources } from '../application/GetSources'
 import { NewsfeedSourceRepository } from '../adapters/NewsfeedSources'
 
+const authService = inject<AuthService>('authService')!
 const sources = ref<Source[]>([])
-const repo = new NewsfeedSourceRepository()
+const repo = new NewsfeedSourceRepository(authService)
 
 const newUrl = ref('')
 const newName = ref('')
