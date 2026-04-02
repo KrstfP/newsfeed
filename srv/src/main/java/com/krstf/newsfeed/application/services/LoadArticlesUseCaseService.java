@@ -6,6 +6,8 @@ import com.krstf.newsfeed.port.outbound.repository.ArticleLoader;
 import com.krstf.newsfeed.port.outbound.repository.GetArticle;
 import com.krstf.newsfeed.port.outbound.repository.GetSource;
 import com.krstf.newsfeed.port.outbound.repository.SaveArticle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +15,7 @@ import java.util.List;
 
 @Service
 public class LoadArticlesUseCaseService {
+    private static final Logger log = LoggerFactory.getLogger(LoadArticlesUseCaseService.class);
     private final GetSource getSource;
     private final ArticleLoader articleLoader;
     private final SaveArticle saveArticle;
@@ -30,8 +33,12 @@ public class LoadArticlesUseCaseService {
         List<RssFeedSource> rssFeedSources = getSource.getAllSources();
 
         for (RssFeedSource rssFeedSource : rssFeedSources) {
-            List<RssItem> rssItems = articleLoader.loadArticles(rssFeedSource);
-            if (rssItems.isEmpty()) {
+            List<RssItem> rssItems;
+            try {
+                rssItems = articleLoader.loadArticles(rssFeedSource);
+            } catch (Exception e) {
+                log.warn("Failed to load articles from source '{}' ({}): {}",
+                        rssFeedSource.getName(), rssFeedSource.getRssFeedUrl(), e.getMessage());
                 continue;
             }
             for (RssItem rssItem : rssItems) {
