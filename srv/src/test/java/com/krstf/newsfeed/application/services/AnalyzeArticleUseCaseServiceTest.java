@@ -2,6 +2,7 @@ package com.krstf.newsfeed.application.services;
 
 import com.krstf.newsfeed.domain.models.AnalysisRequestStatus;
 import com.krstf.newsfeed.domain.models.RssItem;
+import com.krstf.newsfeed.port.outbound.notification.NotifyArticleStatusChange;
 import com.krstf.newsfeed.port.outbound.repository.ArticleAnalyzer;
 import com.krstf.newsfeed.port.outbound.repository.GetArticle;
 import com.krstf.newsfeed.port.outbound.repository.SaveArticle;
@@ -25,6 +26,7 @@ class AnalyzeArticleUseCaseServiceTest {
     @Mock GetArticle getArticle;
     @Mock SaveArticle saveArticle;
     @Mock ArticleAnalyzer articleAnalyzer;
+    @Mock NotifyArticleStatusChange notifyStatusChange;
 
     @InjectMocks AnalyzeArticleUseCaseService service;
 

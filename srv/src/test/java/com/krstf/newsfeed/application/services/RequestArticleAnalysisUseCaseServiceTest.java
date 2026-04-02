@@ -3,6 +3,7 @@ package com.krstf.newsfeed.application.services;
 import com.krstf.newsfeed.domain.models.AnalysisRequestStatus;
 import com.krstf.newsfeed.domain.models.RssItem;
 import com.krstf.newsfeed.port.inbound.dto.RequestDto;
+import com.krstf.newsfeed.port.outbound.notification.NotifyArticleStatusChange;
 import com.krstf.newsfeed.port.outbound.repository.GetArticle;
 import com.krstf.newsfeed.port.outbound.repository.SaveArticle;
 import org.junit.jupiter.api.Test;
@@ -25,6 +26,7 @@ class RequestArticleAnalysisUseCaseServiceTest {
 
     @Mock GetArticle getArticle;
     @Mock SaveArticle saveArticle;
+    @Mock NotifyArticleStatusChange notifyStatusChange;
 
     @InjectMocks RequestArticleAnalysisUseCaseService service;
 
