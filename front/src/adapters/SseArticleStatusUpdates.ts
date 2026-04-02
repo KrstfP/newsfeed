@@ -49,9 +49,10 @@ export class SseArticleStatusUpdates implements ArticleStatusUpdates {
       const events = buffer.split('\n\n')
       buffer = events.pop()!
       for (const event of events) {
-        const dataLine = event.split('\n').find(l => l.startsWith('data: '))
+        const dataLine = event.split('\n').find(l => l.startsWith('data:'))
         if (dataLine) {
-          try { onUpdate(JSON.parse(dataLine.slice(6))) } catch { /* JSON invalide ignoré */ }
+          const json = dataLine.startsWith('data: ') ? dataLine.slice(6) : dataLine.slice(5)
+          try { onUpdate(JSON.parse(json)) } catch { /* JSON invalide ignoré */ }
         }
         // les lignes ": keepalive" sont silencieusement ignorées
       }
