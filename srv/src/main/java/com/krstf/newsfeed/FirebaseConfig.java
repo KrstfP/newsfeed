@@ -14,16 +14,20 @@ import java.io.InputStream;
 @Configuration
 public class FirebaseConfig {
     @PostConstruct
-    public void init() throws IOException {
-        String credentialsPath = System.getenv("FIREBASE_CREDENTIALS_PATH");
-        InputStream serviceAccount = (credentialsPath != null)
-                ? new FileInputStream(credentialsPath)
-                : new ClassPathResource("firebase.json").getInputStream();
+    public void init() {
+        try {
+            String credentialsPath = System.getenv("FIREBASE_CREDENTIALS_PATH");
+            InputStream serviceAccount = (credentialsPath != null)
+                    ? new FileInputStream(credentialsPath)
+                    : new ClassPathResource("firebase.json").getInputStream();
 
-        FirebaseOptions options = FirebaseOptions.builder()
-                .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                .build();
+            FirebaseOptions options = FirebaseOptions.builder()
+                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                    .build();
 
-        FirebaseApp.initializeApp(options);
+            FirebaseApp.initializeApp(options);
+        } catch (IOException e) {
+            System.err.println("[FirebaseConfig] Firebase credentials not found, authentication disabled: " + e.getMessage());
+        }
     }
 }
