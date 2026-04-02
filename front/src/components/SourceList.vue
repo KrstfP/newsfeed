@@ -14,6 +14,7 @@ const newName = ref('')
 const newDescription = ref('')
 const adding = ref(false)
 const error = ref('')
+const deletingId = ref<string | null>(null)
 
 onMounted(async () => {
   sources.value = await getSources(repo)
@@ -33,9 +34,22 @@ async function addSource() {
     newName.value = ''
     newDescription.value = ''
   } catch {
-    error.value = 'Erreur lors de l\'ajout de la source.'
+    error.value = "Erreur lors de l'ajout de la source."
   } finally {
     adding.value = false
+  }
+}
+
+async function deleteSource(source: Source) {
+  deletingId.value = source.id
+  error.value = ''
+  try {
+    await repo.delete(source.id)
+    sources.value = sources.value.filter(s => s.id !== source.id)
+  } catch {
+    error.value = `Impossible de supprimer "${source.name}".`
+  } finally {
+    deletingId.value = null
   }
 }
 </script>
@@ -49,19 +63,33 @@ async function addSource() {
 
     <div class="source-list">
       <div v-for="source in sources" :key="source.id" class="source-row">
-        <div class="source-info">
-          <a :href="source.url" target="_blank" rel="noopener noreferrer" class="source-name">
-            {{ source.name }}
-          </a>
-          <span v-if="source.description" class="source-desc"> · {{ source.description }}</span>
+        <div class="source-body">
+          <div class="source-info">
+            <a :href="source.url" target="_blank" rel="noopener noreferrer" class="source-name">
+              {{ source.name }}
+            </a>
+            <span v-if="source.description" class="source-desc"> · {{ source.description }}</span>
+          </div>
+          <span class="source-url">{{ source.url }}</span>
         </div>
-        <span class="source-url">{{ source.url }}</span>
+        <button
+          class="btn-delete"
+          :disabled="deletingId === source.id"
+          title="Supprimer cette source"
+          @click="deleteSource(source)"
+        >
+          <svg viewBox="0 0 20 20" fill="currentColor" class="icon-trash">
+            <path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.58.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193v-.443A2.75 2.75 0 0011.25 1h-2.5zm0 1.5h2.5c.69 0 1.25.56 1.25 1.25v.345a43.4 43.4 0 00-5 0v-.345c0-.69.56-1.25 1.25-1.25zM6.05 6.015l.096-.007A41.9 41.9 0 0110 5.75c1.305 0 2.594.087 3.855.258l.095.007-.826 10.326a1.25 1.25 0 01-1.247 1.159H7.596a1.25 1.25 0 01-1.247-1.159L5.523 6.015h.527z" clip-rule="evenodd" />
+          </svg>
+        </button>
       </div>
 
       <div v-if="sources.length === 0" class="empty">
         Aucune source configurée.
       </div>
     </div>
+
+    <div v-if="error" class="error-banner">{{ error }}</div>
 
     <div class="add-section">
       <div class="add-title">Ajouter une source</div>
@@ -73,7 +101,6 @@ async function addSource() {
           {{ adding ? 'Ajout…' : '+ Ajouter' }}
         </button>
       </div>
-      <div v-if="error" class="error">{{ error }}</div>
     </div>
   </div>
 </template>
@@ -108,10 +135,18 @@ async function addSource() {
 
 .source-row {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: center;
+  gap: 12px;
   padding: 10px 0;
   border-bottom: 1px solid #e8e8e8;
+}
+
+.source-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .source-info {
@@ -136,12 +171,53 @@ async function addSource() {
 .source-url {
   font-size: 11px;
   color: #bbb;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn-delete {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 5px;
+  border-radius: 5px;
+  cursor: pointer;
+  color: #ccc;
+  display: flex;
+  align-items: center;
+  transition: color 0.12s, background 0.12s;
+}
+
+.btn-delete:hover:not(:disabled) {
+  color: #c42b2b;
+  background: #fff0f0;
+}
+
+.btn-delete:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.icon-trash {
+  width: 16px;
+  height: 16px;
 }
 
 .empty {
   padding: 24px 0;
   color: #aaa;
   font-size: 13px;
+}
+
+.error-banner {
+  margin: 0 32px;
+  padding: 8px 12px;
+  background: #fff0f0;
+  border: 1px solid #f5c2c2;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #c42b2b;
 }
 
 .add-section {
@@ -204,11 +280,5 @@ async function addSource() {
 .btn-add:disabled {
   opacity: 0.6;
   cursor: default;
-}
-
-.error {
-  margin-top: 8px;
-  font-size: 12px;
-  color: #c42b2b;
 }
 </style>

@@ -14,6 +14,7 @@ public class RssFeedSource {
     private final String name;
     private final String description;
     private final String userId;
+    private RssFeedSourceStatus status;
 
     public RssFeedSource(URI rssFeedUrl, String name, String description, String userId) {
         this.id = UUID.nameUUIDFromBytes(
@@ -22,14 +23,16 @@ public class RssFeedSource {
         this.name = name;
         this.description = description;
         this.userId = userId;
+        this.status = RssFeedSourceStatus.ACTIVE;
     }
 
-    public RssFeedSource(UUID id, URI rssFeedUrl, String name, String description, String userId) {
+    public RssFeedSource(UUID id, URI rssFeedUrl, String name, String description, String userId, RssFeedSourceStatus status) {
         this.id = id;
         this.rssFeedUrl = rssFeedUrl;
         this.name = name;
         this.description = description;
         this.userId = userId;
+        this.status = status;
     }
 
     public final UUID getId() {
@@ -50,5 +53,13 @@ public class RssFeedSource {
 
     public String getUserId() {
         return userId;
+    }
+
+    public RssFeedSourceStatus getStatus() {
+        return status;
+    }
+
+    public void delete() {
+        this.status = RssFeedSourceStatus.DELETED;
     }
 }

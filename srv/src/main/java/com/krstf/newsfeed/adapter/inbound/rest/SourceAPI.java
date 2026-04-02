@@ -1,6 +1,7 @@
 package com.krstf.newsfeed.adapter.inbound.rest;
 
 import com.krstf.newsfeed.port.inbound.AddSourceUseCase;
+import com.krstf.newsfeed.port.inbound.DeleteSourceUseCase;
 import com.krstf.newsfeed.port.inbound.GetSourcesUseCase;
 import com.krstf.newsfeed.port.inbound.dto.CreateSourceRequest;
 import com.krstf.newsfeed.port.inbound.dto.SourceDto;
@@ -9,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api")
@@ -16,11 +19,14 @@ public class SourceAPI {
 
     private final GetSourcesUseCase getSourcesUseCase;
     private final AddSourceUseCase addSourceUseCase;
+    private final DeleteSourceUseCase deleteSourceUseCase;
     private final CurrentUser currentUser;
 
-    public SourceAPI(GetSourcesUseCase getSourcesUseCase, AddSourceUseCase addSourceUseCase, CurrentUser currentUser) {
+    public SourceAPI(GetSourcesUseCase getSourcesUseCase, AddSourceUseCase addSourceUseCase,
+                     DeleteSourceUseCase deleteSourceUseCase, CurrentUser currentUser) {
         this.getSourcesUseCase = getSourcesUseCase;
         this.addSourceUseCase = addSourceUseCase;
+        this.deleteSourceUseCase = deleteSourceUseCase;
         this.currentUser = currentUser;
     }
 
@@ -32,5 +38,15 @@ public class SourceAPI {
     @PostMapping("/sources")
     public ResponseEntity<SourceDto> addSource(@Valid @RequestBody CreateSourceRequest request) {
         return ResponseEntity.status(201).body(addSourceUseCase.addSource(request, currentUser.getUserId()));
+    }
+
+    @DeleteMapping("/sources/{id}")
+    public ResponseEntity<Void> deleteSource(@PathVariable UUID id) {
+        try {
+            deleteSourceUseCase.deleteSource(id, currentUser.getUserId());
+            return ResponseEntity.noContent().build();
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

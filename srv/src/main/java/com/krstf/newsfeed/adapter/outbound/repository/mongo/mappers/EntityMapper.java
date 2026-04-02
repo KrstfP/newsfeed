@@ -4,6 +4,7 @@ import com.krstf.newsfeed.adapter.outbound.repository.mongo.entity.ArticleEntity
 import com.krstf.newsfeed.adapter.outbound.repository.mongo.entity.SourceEntity;
 import com.krstf.newsfeed.domain.models.AnalysisRequestStatus;
 import com.krstf.newsfeed.domain.models.RssFeedSource;
+import com.krstf.newsfeed.domain.models.RssFeedSourceStatus;
 import com.krstf.newsfeed.domain.models.RssItem;
 import com.krstf.newsfeed.port.outbound.repository.FullArticleDto;
 import org.springframework.stereotype.Service;
@@ -63,12 +64,17 @@ public class EntityMapper {
     }
 
     public RssFeedSource toDomain(SourceEntity entity) {
+        // Les documents sans status (avant migration) sont traités comme ACTIVE
+        RssFeedSourceStatus status = entity.getStatus() != null
+                ? RssFeedSourceStatus.valueOf(entity.getStatus())
+                : RssFeedSourceStatus.ACTIVE;
         return new RssFeedSource(
                 entity.getId(),
                 entity.getRssFeedUrl(),
                 entity.getName(),
                 entity.getDescription(),
-                entity.getUserId()
+                entity.getUserId(),
+                status
         );
     }
 
@@ -78,7 +84,8 @@ public class EntityMapper {
                 rssFeedSource.getRssFeedUrl(),
                 rssFeedSource.getName(),
                 rssFeedSource.getDescription(),
-                rssFeedSource.getUserId()
+                rssFeedSource.getUserId(),
+                rssFeedSource.getStatus().name()
         );
     }
 }

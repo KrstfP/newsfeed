@@ -18,12 +18,16 @@ public class SourceEntity {
     @Indexed
     private final String userId;
 
-    public SourceEntity(String id, URI rssFeedUrl, String name, String description, String userId) {
+    // Null pour les documents existants avant la migration → traité comme ACTIVE
+    private final String status;
+
+    public SourceEntity(String id, URI rssFeedUrl, String name, String description, String userId, String status) {
         this.id = id;
         this.rssFeedUrl = rssFeedUrl;
         this.name = name;
         this.description = description;
         this.userId = userId;
+        this.status = status;
     }
 
     public UUID getId() {
@@ -44,5 +48,9 @@ public class SourceEntity {
 
     public String getUserId() {
         return userId;
+    }
+
+    public String getStatus() {
+        return status;
     }
 }

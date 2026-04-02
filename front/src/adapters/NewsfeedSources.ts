@@ -26,4 +26,13 @@ export class NewsfeedSourceRepository implements SourceRepository {
       body: JSON.stringify({ url, name, description }),
     })
   }
+
+  async delete(id: string): Promise<void> {
+    const headers = await this.auth.getAuthHeaders()
+    const res = await fetch(`http://localhost:8080/api/sources/${id}`, {
+      method: 'DELETE',
+      headers,
+    })
+    if (res.status === 404) throw new Error('Source introuvable.')
+  }
 }
