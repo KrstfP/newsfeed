@@ -8,7 +8,7 @@ export class NewsfeedSourceRepository implements SourceRepository {
 
   async getAll(): Promise<Source[]> {
     const headers = await this.auth.getAuthHeaders()
-    const res = await fetch('http://localhost:8080/api/sources', { headers })
+    const res = await fetch('/api/sources', { headers })
     const data = await res.json()
     return data.map((item: any) => ({
       id: item.id,
@@ -20,7 +20,7 @@ export class NewsfeedSourceRepository implements SourceRepository {
 
   async add(url: string, name: string, description?: string): Promise<void> {
     const headers = await this.auth.getAuthHeaders()
-    await fetch('http://localhost:8080/api/sources', {
+    await fetch('/api/sources', {
       method: 'POST',
       headers: { ...headers, 'Content-Type': 'application/json' },
       body: JSON.stringify({ url, name, description }),
@@ -29,7 +29,7 @@ export class NewsfeedSourceRepository implements SourceRepository {
 
   async delete(id: string): Promise<void> {
     const headers = await this.auth.getAuthHeaders()
-    const res = await fetch(`http://localhost:8080/api/sources/${id}`, {
+    const res = await fetch(`/api/sources/${id}`, {
       method: 'DELETE',
       headers,
     })

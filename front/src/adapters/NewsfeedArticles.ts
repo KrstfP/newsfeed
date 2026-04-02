@@ -9,12 +9,12 @@ export class NewsfeedArticleRepository implements ArticleRepository, RequestAnal
 
   async requestAnalysis(article: Article): Promise<void> {
     const headers = await this.auth.getAuthHeaders()
-    await fetch(`http://localhost:8080/api/article/${article.id}/analyze`, { headers })
+    await fetch(`/api/article/${article.id}/analyze`, { headers })
   }
 
   async getAll(): Promise<Article[]> {
     const headers = await this.auth.getAuthHeaders()
-    const res = await fetch('http://localhost:8080/api/articles', { headers })
+    const res = await fetch('/api/articles', { headers })
     const data = await res.json()
     return data.map((item: any) => ({
       id: item.id,
