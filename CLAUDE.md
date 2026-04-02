@@ -38,7 +38,7 @@ front/ → Frontend Vue 3 + TypeScript
 **Endpoints REST :**
 | Méthode | URL | Description |
 |---------|-----|-------------|
-| `GET` | `/api/articles` | Articles de l'utilisateur courant |
+| `GET` | `/api/articles` | Articles de l'utilisateur courant — retourne `analysis` (Markdown, nullable) |
 | `GET` | `/api/article/{id}/analyze` | Demande d'analyse d'un article |
 | `GET` | `/api/sources` | Sources RSS de l'utilisateur courant |
 | `POST` | `/api/sources` | Ajoute une source RSS (`url` obligatoire, `name` obligatoire, `description` optionnel) |
@@ -59,14 +59,14 @@ cd srv && ./mvnw test
 
 ## Frontend (`front/`)
 
-**Stack :** Vue 3, TypeScript, Vite (rolldown), Naive UI
+**Stack :** Vue 3, TypeScript, Vite (rolldown), Naive UI, marked (rendu Markdown)
 
 **Architecture hexagonale (miroir du backend) :**
-- `domain/` — modèles (`Article`, `RequestStatus`)
+- `domain/` — modèles (`Article`, `RequestStatus`) — `Article` inclut `analysis: string | null`
 - `ports/` — interfaces (`ArticleRepository`, `RequestAnalysis`)
 - `application/` — use cases (`GetArticles`, `RequestAnalysis`)
 - `adapters/` — implémentation HTTP (`NewsfeedArticles`, `NewsfeedSources`) — URLs relatives `/api/*`
-- `components/` — `App`, `ArticleList`, `ArticleItem`, `Background`, `Sidebar`, etc.
+- `components/` — `App`, `ArticleList`, `ArticleItem`, `AnalysisModal`, `Background`, `Sidebar`, etc.
 
 **Lancer le frontend :**
 ```bash

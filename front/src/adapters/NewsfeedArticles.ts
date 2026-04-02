@@ -24,6 +24,7 @@ export class NewsfeedArticleRepository implements ArticleRepository, RequestAnal
       description: item.content,
       categories: item.categories,
       analysisRequestStatus: item.analysisRequestStatus,
+      analysis: item.analysis ?? null,
       publishedAt: new Date(item.publishedAt),
     }))
   }

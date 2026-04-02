@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import type { Article } from '../domain/Article'
+import { RequestStatus } from '../domain/Article'
 import { NButton, NIcon, NTag } from 'naive-ui'
 import {
   BrainCircuit20Filled,
@@ -11,9 +12,20 @@ import {
 } from '@vicons/fluent'
 
 const props = defineProps<{ article: Article }>()
-const emit = defineEmits<{ (e: 'analyze', article: Article): void }>()
+const emit = defineEmits<{
+  (e: 'analyze', article: Article): void
+  (e: 'open-analysis', article: Article): void
+}>()
 
 const expanded = ref(false)
+
+function onContentClick() {
+  if (props.article.analysisRequestStatus === RequestStatus.COMPLETED) {
+    emit('open-analysis', props.article)
+  } else {
+    expanded.value = !expanded.value
+  }
+}
 
 const statusMap = {
   NOT_REQUESTED: { icon: BrainCircuit20Filled,    type: 'default'  as const, loading: false },
@@ -62,7 +74,7 @@ const formattedDate = new Intl.DateTimeFormat('fr-FR', {
     </NButton>
 
     <!-- Content: collapsed = single line, expanded = full -->
-    <div class="content" @click="expanded = !expanded">
+    <div class="content" @click="onContentClick">
       <template v-if="!expanded">
         <span class="title">{{ article.title }}</span>
         <span class="sep"> · </span>

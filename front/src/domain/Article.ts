@@ -18,4 +18,5 @@ export interface Article {
   publishedAt: Date
   analysisRequestStatus: RequestStatus
   categories: [string]
+  analysis: string | null
 }

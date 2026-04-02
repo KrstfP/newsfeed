@@ -3,6 +3,7 @@ import { ref, inject, onMounted } from 'vue'
 import type { Article } from '../domain/Article'
 import type { AuthService } from '../ports/AuthService'
 import ArticleItem from './ArticleItem.vue'
+import AnalysisModal from './AnalysisModal.vue'
 import { getArticles } from '../application/GetArticles'
 import { NewsfeedArticleRepository } from '../adapters/NewsfeedArticles'
 
@@ -16,6 +17,12 @@ onMounted(async () => {
 
 function onAnalyze(article: Article) {
   repo.requestAnalysis(article)
+}
+
+const analysisTarget = ref<Article | null>(null)
+
+function onOpenAnalysis(article: Article) {
+  analysisTarget.value = article
 }
 </script>
 
@@ -39,9 +46,16 @@ function onAnalyze(article: Article) {
         :key="article.id"
         :article="article"
         @analyze="onAnalyze"
+        @open-analysis="onOpenAnalysis"
       />
     </div>
   </div>
+
+  <AnalysisModal
+    :article="analysisTarget"
+    :show="analysisTarget !== null"
+    @close="analysisTarget = null"
+  />
 </template>
 
 <style scoped>
