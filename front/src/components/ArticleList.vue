@@ -39,9 +39,9 @@ async function reload() {
 }
 
 function handleStatusUpdate(update: ArticleStatusUpdate) {
-  const article = articles.value.find(a => a.id === update.articleId)
-  if (!article) return
-  article.analysisRequestStatus = update.newValue as RequestStatus
+  const idx = articles.value.findIndex(a => a.id === update.articleId)
+  if (idx === -1) return
+  articles.value[idx] = { ...articles.value[idx], analysisRequestStatus: update.newValue as RequestStatus } as Article
   if (update.newValue === RequestStatus.COMPLETED) {
     reload()
   }

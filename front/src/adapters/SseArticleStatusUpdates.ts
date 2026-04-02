@@ -1,6 +1,8 @@
 import type { AuthService } from '../ports/AuthService'
 import type { ArticleStatusUpdate, ArticleStatusUpdates } from '../ports/ArticleStatusUpdates'
 
+const RECONNECT_DELAY_MS = 3_000
+
 export class SseArticleStatusUpdates implements ArticleStatusUpdates {
   private auth: AuthService
 
@@ -10,36 +12,49 @@ export class SseArticleStatusUpdates implements ArticleStatusUpdates {
 
   subscribe(onUpdate: (update: ArticleStatusUpdate) => void): () => void {
     const controller = new AbortController()
-    this.stream(onUpdate, controller.signal)
+    this.loop(onUpdate, controller.signal)
     return () => controller.abort()
   }
 
-  private async stream(
+  private async loop(
+    onUpdate: (update: ArticleStatusUpdate) => void,
+    signal: AbortSignal
+  ): Promise<void> {
+    while (!signal.aborted) {
+      try {
+        await this.connect(onUpdate, signal)
+      } catch {
+        // connexion perdue ou AbortError
+      }
+      if (!signal.aborted) {
+        await new Promise(resolve => setTimeout(resolve, RECONNECT_DELAY_MS))
+      }
+    }
+  }
+
+  private async connect(
     onUpdate: (update: ArticleStatusUpdate) => void,
     signal: AbortSignal
   ): Promise<void> {
     const headers = await this.auth.getAuthHeaders()
-    try {
-      const response = await fetch('/api/stream', { headers, signal })
-      const reader = response.body!.getReader()
-      const decoder = new TextDecoder()
-      let buffer = ''
+    const response = await fetch('/api/stream', { headers, signal })
+    const reader = response.body!.getReader()
+    const decoder = new TextDecoder()
+    let buffer = ''
 
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-        buffer += decoder.decode(value, { stream: true })
-        const events = buffer.split('\n\n')
-        buffer = events.pop()!
-        for (const event of events) {
-          const dataLine = event.split('\n').find(l => l.startsWith('data: '))
-          if (dataLine) {
-            try { onUpdate(JSON.parse(dataLine.slice(6))) } catch { /* JSON invalide ignoré */ }
-          }
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      buffer += decoder.decode(value, { stream: true })
+      const events = buffer.split('\n\n')
+      buffer = events.pop()!
+      for (const event of events) {
+        const dataLine = event.split('\n').find(l => l.startsWith('data: '))
+        if (dataLine) {
+          try { onUpdate(JSON.parse(dataLine.slice(6))) } catch { /* JSON invalide ignoré */ }
         }
+        // les lignes ": keepalive" sont silencieusement ignorées
       }
-    } catch {
-      // AbortError si disconnect volontaire → silencieux
     }
   }
 }

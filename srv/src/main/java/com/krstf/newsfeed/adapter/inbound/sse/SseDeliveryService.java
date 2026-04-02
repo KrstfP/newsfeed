@@ -7,6 +7,7 @@ import com.krstf.newsfeed.port.outbound.notification.ArticleStatusChangeListener
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -31,6 +32,18 @@ class SseDeliveryService implements ArticleStatusChangeListener {
         emitter.onCompletion(() -> emitters.remove(userId));
         emitter.onTimeout(() -> emitters.remove(userId));
         emitter.onError(e -> emitters.remove(userId));
+    }
+
+    @Scheduled(fixedDelay = 25_000)
+    void sendKeepalive() {
+        emitters.forEach((userId, emitter) -> {
+            try {
+                emitter.send(SseEmitter.event().comment("keepalive"));
+            } catch (IOException e) {
+                emitters.remove(userId);
+                emitter.complete();
+            }
+        });
     }
 
     @Override
