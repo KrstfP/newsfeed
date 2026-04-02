@@ -2,7 +2,6 @@ package com.krstf.newsfeed.adapter.outbound.repository.mongo.entity;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -41,9 +40,6 @@ public class ArticleEntity {
 
     @LastModifiedDate
     private Instant updatedAt;
-
-    @Version
-    private Long version;
 
     public ArticleEntity(
             String id,
