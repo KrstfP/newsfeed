@@ -65,17 +65,19 @@ cd srv && ./mvnw test
 - `domain/` — modèles (`Article`, `RequestStatus`)
 - `ports/` — interfaces (`ArticleRepository`, `RequestAnalysis`)
 - `application/` — use cases (`GetArticles`, `RequestAnalysis`)
-- `adapters/` — implémentation HTTP (`NewsfeedArticles` → `http://localhost:8080`)
-- `components/` — `App`, `Header`, `ArticleList`, `ArticleItem`, `Background`
+- `adapters/` — implémentation HTTP (`NewsfeedArticles`, `NewsfeedSources`) — URLs relatives `/api/*`
+- `components/` — `App`, `ArticleList`, `ArticleItem`, `Background`, `Sidebar`, etc.
 
 **Lancer le frontend :**
 ```bash
 cd front && npm install && npm run dev   # http://localhost:5173
 ```
 
+Le serveur de dev Vite proxifie `/api/*` vers `http://localhost:8080` (configuré dans `vite.config.ts`).
+
 **Build :**
 ```bash
-cd front && npm run build
+cd front && npm run build   # output dans front/dist/
 ```
 
 ## Authentification
@@ -86,24 +88,66 @@ Deux modes selon le profil Spring :
   ```
   X-User-Id: mon-user-id
   ```
-- **`!dev`** (production) — `FirebaseAuthenticationFilter` valide le token Bearer Firebase. `FirebaseConfig` charge `firebase.json` depuis le classpath.
+- **`!dev`** (production) — `FirebaseAuthenticationFilter` valide le token Bearer Firebase. `FirebaseConfig` charge les credentials depuis `FIREBASE_CREDENTIALS_PATH` (env var) ou `firebase.json` en classpath.
 
 Routes `/app/**` sont publiques, tout le reste (`/api/*`) requiert une authentification.
 
-## Fonctionnement global
+## Infrastructure & Déploiement
 
-1. `LoadArticlesUseCaseService` charge les articles toutes les 60 minutes depuis toutes les sources RSS (tous utilisateurs)
-2. Les articles sont dédupliqués par `(userId + url)` et sauvegardés en MongoDB
-3. L'utilisateur peut demander une analyse via `GET /api/article/{id}/analyze` → statut passe à `PENDING`
-4. `AnalyzeArticleUseCaseService` dépile les articles `PENDING` toutes les 10 secondes, appelle Mistral, stocke l'analyse structurée
-5. Le frontend affiche les articles avec leur statut d'analyse et permet de déclencher une nouvelle analyse
+### Docker
+
+2 images Docker séparées :
+
+**`Dockerfile.backend`** — multi-stage Maven + JRE 21 Alpine
+- JVM tunée pour Render free tier : `-Xmx200m -XX:+UseSerialGC -XX:MaxMetaspaceSize=96m`
+
+**`Dockerfile.frontend`** — multi-stage Node 22 + nginx Alpine
+- Build Vite → fichiers statiques servis par nginx
+- nginx proxifie `/api/*` vers le backend via `BACKEND_URL` et `BACKEND_HOST`
+- `Origin` header strippé avant forwarding (évite les faux positifs CORS côté backend)
+- Template nginx : `front/nginx.conf.template` (processsé par `envsubst` au démarrage)
+
+**`docker-compose.yml`** — dev local avec les 2 services :
+```bash
+docker-compose up
+# Frontend sur http://localhost:80
+# Backend sur http://localhost:8080
+```
+
+### CI/CD — GitHub Actions (`.github/workflows/ci.yml`)
+
+- **Sur PR** : job `test` uniquement (`cd srv && ./mvnw test`)
+- **Sur push `main`** : `test` → `build-and-push` → `deploy`
+  - Images poussées sur GHCR : `ghcr.io/krstfp/newsfeed/backend:latest` et `.../frontend:latest`
+  - Auth GHCR via `GITHUB_TOKEN` (pas de secret supplémentaire)
+  - Déploiement Render via deploy hooks
+
+**GitHub Secrets requis :**
+| Secret | Usage |
+|--------|-------|
+| `VITE_FIREBASE_API_KEY` | Baked dans le bundle Vite au build |
+| `VITE_FIREBASE_AUTH_DOMAIN` | Baked dans le bundle Vite au build |
+| `VITE_FIREBASE_PROJECT_ID` | Baked dans le bundle Vite au build |
+| `RENDER_BACKEND_DEPLOY_HOOK_URL` | Deploy hook Render backend |
+| `RENDER_FRONTEND_DEPLOY_HOOK_URL` | Deploy hook Render frontend |
+
+### Hébergement — Render (free tier)
+
+**Service backend** :
+- Image : `ghcr.io/krstfp/newsfeed/backend:latest`
+- Env vars : `MISTRAL_API_KEY`, `MONGODB_URI`, `FIREBASE_CREDENTIALS_PATH=/etc/secrets/firebase.json`
+- Secret File : `firebase.json` monté à `/etc/secrets/firebase.json`
+
+**Service frontend** :
+- Image : `ghcr.io/krstfp/newsfeed/frontend:latest`
+- Env vars : `BACKEND_URL=https://<backend>.onrender.com`, `BACKEND_HOST=<backend>.onrender.com`
 
 ## Variables d'environnement
 
 Le fichier `.env` (non versionné) contient les secrets nécessaires (clé Mistral, config Firebase, URI MongoDB).
 
 Configuration dans `application.properties` :
-- `spring.data.mongodb.uri` — URI MongoDB (depuis env)
+- `spring.data.mongodb.uri` — URI MongoDB Atlas
 - `spring.ai.mistralai.api-key` — Clé API Mistral
 - `spring.ai.mistralai.chat.options.model=mistral-large-latest`
 
