@@ -13,5 +13,4 @@ ENTRYPOINT ["java", \
   "-Xmx200m", \
   "-XX:+UseSerialGC", \
   "-XX:MaxMetaspaceSize=96m", \
-  "-Dspring.main.lazy-initialization=true", \
   "-jar", "app.jar"]
