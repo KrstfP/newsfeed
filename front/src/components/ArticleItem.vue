@@ -193,6 +193,16 @@ const formattedDate = new Intl.DateTimeFormat('fr-FR', {
   gap: 4px;
 }
 
+@media (max-width: 768px) {
+  .row {
+    grid-template-columns: 26px 1fr 55px;
+  }
+
+  .source {
+    display: none;
+  }
+}
+
 /* Date */
 .date {
   font-size: 10px;

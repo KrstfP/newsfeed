@@ -159,6 +159,28 @@ function onOpenAnalysis(article: Article) {
   font-weight: 500;
 }
 
+@media (max-width: 768px) {
+  .col-headers {
+    grid-template-columns: 1fr 55px;
+  }
+
+  .col-source {
+    display: none;
+  }
+
+  .col-content {
+    padding-left: 38px; /* aligne avec le contenu (26px icône + 8px gap) */
+  }
+
+  .list {
+    padding: 0 16px;
+  }
+
+  .filters {
+    padding: 8px 16px 4px;
+  }
+}
+
 .col-sep {
   height: 1px;
   background: #e0e0e0;
