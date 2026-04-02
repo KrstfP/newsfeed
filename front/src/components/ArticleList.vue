@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { ref, inject, onMounted, watch } from 'vue'
+import { ref, inject, onMounted, onUnmounted, watch } from 'vue'
 import type { Article, ArticleFilters } from '../domain/Article'
+import { RequestStatus } from '../domain/Article'
 import type { AuthService } from '../ports/AuthService'
+import type { ArticleStatusUpdate, ArticleStatusUpdates } from '../ports/ArticleStatusUpdates'
 import ArticleItem from './ArticleItem.vue'
 import AnalysisModal from './AnalysisModal.vue'
 import { getArticles } from '../application/GetArticles'
 import { NewsfeedArticleRepository } from '../adapters/NewsfeedArticles'
+import { SseArticleStatusUpdates } from '../adapters/SseArticleStatusUpdates'
 
 const authService = inject<AuthService>('authService')!
 const articles = ref<Article[]>([])
@@ -35,7 +38,27 @@ async function reload() {
   articles.value = await getArticles(repo, filters)
 }
 
-onMounted(reload)
+function handleStatusUpdate(update: ArticleStatusUpdate) {
+  const article = articles.value.find(a => a.id === update.articleId)
+  if (!article) return
+  article.analysisRequestStatus = update.newValue as RequestStatus
+  if (update.newValue === RequestStatus.COMPLETED) {
+    reload()
+  }
+}
+
+let unsubscribe: (() => void) | null = null
+
+onMounted(async () => {
+  await reload()
+  const sseUpdates: ArticleStatusUpdates = new SseArticleStatusUpdates(authService)
+  unsubscribe = sseUpdates.subscribe(handleStatusUpdate)
+})
+
+onUnmounted(() => {
+  unsubscribe?.()
+})
+
 watch([analyzedFilter, sinceFilter], reload)
 
 function onAnalyze(article: Article) {
