@@ -1,5 +1,5 @@
-import type { Article } from '../domain/Article'
+import type { Article, ArticleFilters } from '../domain/Article'
 
 export interface ArticleRepository {
-  getAll(): Promise<Article[]>
+  getAll(filters?: ArticleFilters): Promise<Article[]>
 }

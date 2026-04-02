@@ -1,9 +1,6 @@
 import type { ArticleRepository } from '../ports/ArticleRepository'
+import type { ArticleFilters } from '../domain/Article'
 
-export async function getArticles(repo: ArticleRepository) {
-  const articles = await repo.getAll()
-
-  return articles.sort(
-    (a, b) => b.publishedAt.getTime() - a.publishedAt.getTime()
-  )
+export async function getArticles(repo: ArticleRepository, filters?: ArticleFilters) {
+  return repo.getAll(filters)
 }

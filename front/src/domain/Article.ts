@@ -9,6 +9,11 @@ export const RequestStatus = {
 export type RequestStatus =
   typeof RequestStatus[keyof typeof RequestStatus]
 
+export interface ArticleFilters {
+  analyzed?: boolean
+  since?: string // YYYY-MM-DD
+}
+
 export interface Article {
   id: string
   title: string

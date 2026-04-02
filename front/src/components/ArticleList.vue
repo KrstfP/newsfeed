@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, inject, onMounted } from 'vue'
-import type { Article } from '../domain/Article'
+import { ref, inject, onMounted, watch } from 'vue'
+import type { Article, ArticleFilters } from '../domain/Article'
 import type { AuthService } from '../ports/AuthService'
 import ArticleItem from './ArticleItem.vue'
 import AnalysisModal from './AnalysisModal.vue'
@@ -11,9 +11,32 @@ const authService = inject<AuthService>('authService')!
 const articles = ref<Article[]>([])
 const repo = new NewsfeedArticleRepository(authService)
 
-onMounted(async () => {
-  articles.value = await getArticles(repo)
-})
+const analyzedFilter = ref<boolean | undefined>(undefined)
+const sinceFilter = ref<string | undefined>(undefined)
+
+function yesterday(): string {
+  const d = new Date()
+  d.setDate(d.getDate() - 1)
+  return d.toISOString().slice(0, 10)
+}
+
+function toggleAnalyzed() {
+  analyzedFilter.value = analyzedFilter.value === true ? undefined : true
+}
+
+function toggleSince() {
+  sinceFilter.value = sinceFilter.value ? undefined : yesterday()
+}
+
+async function reload() {
+  const filters: ArticleFilters = {}
+  if (analyzedFilter.value !== undefined) filters.analyzed = analyzedFilter.value
+  if (sinceFilter.value) filters.since = sinceFilter.value
+  articles.value = await getArticles(repo, filters)
+}
+
+onMounted(reload)
+watch([analyzedFilter, sinceFilter], reload)
 
 function onAnalyze(article: Article) {
   repo.requestAnalysis(article)
@@ -31,6 +54,15 @@ function onOpenAnalysis(article: Article) {
     <div class="topbar">
       <span class="panel-title">Today</span>
       <span class="article-count">{{ articles.length }} articles</span>
+    </div>
+
+    <div class="filters">
+      <button class="chip" :class="{ active: analyzedFilter === true }" @click="toggleAnalyzed">
+        Analysés
+      </button>
+      <button class="chip" :class="{ active: !!sinceFilter }" @click="toggleSince">
+        &lt; 24h
+      </button>
     </div>
 
     <div class="col-headers">
@@ -96,6 +128,35 @@ function onOpenAnalysis(article: Article) {
 /* offset col-content to align with article title (after the 26px icon) */
 .col-content {
   padding-left: 34px;
+}
+
+.filters {
+  display: flex;
+  gap: 6px;
+  padding: 8px 32px 4px;
+}
+
+.chip {
+  padding: 3px 10px;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+  background: #fff;
+  font-size: 11px;
+  color: #666;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  white-space: nowrap;
+}
+
+.chip:hover {
+  background: #f0f0f0;
+}
+
+.chip.active {
+  background: #e8eeff;
+  border-color: #c5d0fb;
+  color: #2a6ef5;
+  font-weight: 500;
 }
 
 .col-sep {

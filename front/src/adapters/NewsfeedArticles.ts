@@ -1,5 +1,5 @@
 import type { ArticleRepository } from '../ports/ArticleRepository'
-import type { Article } from '../domain/Article'
+import type { Article, ArticleFilters } from '../domain/Article'
 import type { RequestAnalysis } from '../ports/RequestAnalysis'
 import type { AuthService } from '../ports/AuthService'
 
@@ -12,9 +12,13 @@ export class NewsfeedArticleRepository implements ArticleRepository, RequestAnal
     await fetch(`/api/article/${article.id}/analyze`, { headers })
   }
 
-  async getAll(): Promise<Article[]> {
+  async getAll(filters: ArticleFilters = {}): Promise<Article[]> {
     const headers = await this.auth.getAuthHeaders()
-    const res = await fetch('/api/articles', { headers })
+    const params = new URLSearchParams()
+    if (filters.analyzed !== undefined) params.set('analyzed', String(filters.analyzed))
+    if (filters.since) params.set('since', filters.since)
+    const url = '/api/articles' + (params.size ? '?' + params : '')
+    const res = await fetch(url, { headers })
     const data = await res.json()
     return data.map((item: any) => ({
       id: item.id,

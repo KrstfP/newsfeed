@@ -2,14 +2,14 @@ package com.krstf.newsfeed.adapter.inbound.rest;
 
 import com.krstf.newsfeed.port.inbound.RequestArticleAnalysisUseCase;
 import com.krstf.newsfeed.port.inbound.dto.RequestDto;
+import com.krstf.newsfeed.port.outbound.repository.ArticleFilters;
 import com.krstf.newsfeed.port.outbound.repository.FullArticleDto;
 import com.krstf.newsfeed.port.outbound.repository.GetFullArticle;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,8 +28,13 @@ public class ArticleAPI {
     }
 
     @GetMapping("/articles")
-    public ResponseEntity<List<FullArticleDto>> getArticles() {
-        return ResponseEntity.ok(getFullArticle.getFullArticles(currentUser.getUserId()));
+    public ResponseEntity<List<FullArticleDto>> getArticles(
+            @RequestParam(required = false) Boolean analyzed,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate since
+    ) {
+        return ResponseEntity.ok(
+                getFullArticle.getFullArticles(currentUser.getUserId(), new ArticleFilters(analyzed, since))
+        );
     }
 
     @GetMapping("/article/{articleId}/analyze")
