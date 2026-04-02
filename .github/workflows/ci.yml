@@ -17,7 +17,7 @@ jobs:
           distribution: 'temurin'
           cache: maven
       - name: Run tests
-        run: cd srv && ./mvnw test
+        run: cd srv && chmod +x mvnw && ./mvnw test
 
   build-and-push:
     needs: test
