@@ -2,6 +2,7 @@ package com.krstf.newsfeed.application.services;
 
 import com.krstf.newsfeed.domain.models.RssFeedSource;
 import com.krstf.newsfeed.domain.models.RssItem;
+import com.krstf.newsfeed.port.outbound.ai.SemanticVectorizer;
 import com.krstf.newsfeed.port.outbound.repository.ArticleLoader;
 import com.krstf.newsfeed.port.outbound.repository.GetArticle;
 import com.krstf.newsfeed.port.outbound.repository.GetSource;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -27,6 +29,7 @@ class LoadArticlesUseCaseServiceTest {
     @Mock ArticleLoader articleLoader;
     @Mock SaveArticle saveArticle;
     @Mock GetArticle getArticle;
+    @Mock SemanticVectorizer semanticVectorizer;
 
     @InjectMocks LoadArticlesUseCaseService service;
 
@@ -104,5 +107,51 @@ class LoadArticlesUseCaseServiceTest {
         service.refreshArticles();
 
         verifyNoInteractions(saveArticle, getArticle);
+    }
+
+    // --- vectorisation ---
+
+    @Test
+    void refreshArticles_newArticle_vectorIsAttachedBeforeSave() {
+        RssFeedSource source = anySource();
+        RssItem article = anyArticle();
+        float[] vector = {0.1f, 0.2f, 0.3f};
+        when(getSource.getAllSources()).thenReturn(List.of(source));
+        when(articleLoader.loadArticles(source)).thenReturn(List.of(article));
+        when(getArticle.getArticleById(article.getId())).thenReturn(Optional.empty());
+        when(semanticVectorizer.vectorizeText(anyString())).thenReturn(vector);
+
+        service.refreshArticles();
+
+        assertThat(article.getSemanticVector()).isEqualTo(vector);
+        verify(saveArticle).saveArticle(article);
+    }
+
+    @Test
+    void refreshArticles_vectorizerThrows_articleIsSavedWithoutVector() {
+        RssFeedSource source = anySource();
+        RssItem article = anyArticle();
+        when(getSource.getAllSources()).thenReturn(List.of(source));
+        when(articleLoader.loadArticles(source)).thenReturn(List.of(article));
+        when(getArticle.getArticleById(article.getId())).thenReturn(Optional.empty());
+        when(semanticVectorizer.vectorizeText(anyString())).thenThrow(new RuntimeException("quota exceeded"));
+
+        service.refreshArticles();
+
+        assertThat(article.getSemanticVector()).isNull();
+        verify(saveArticle).saveArticle(article);
+    }
+
+    @Test
+    void refreshArticles_articleAlreadyExists_vectorizerIsNotCalled() {
+        RssFeedSource source = anySource();
+        RssItem article = anyArticle();
+        when(getSource.getAllSources()).thenReturn(List.of(source));
+        when(articleLoader.loadArticles(source)).thenReturn(List.of(article));
+        when(getArticle.getArticleById(article.getId())).thenReturn(Optional.of(article));
+
+        service.refreshArticles();
+
+        verifyNoInteractions(semanticVectorizer);
     }
 }
