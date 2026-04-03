@@ -37,6 +37,7 @@ public class ArticleEntity {
     @Indexed
     private String analysisStatus = "NOT_REQUESTED";
     private String analysis = null;
+    private float[] semanticVector = null;
 
     @LastModifiedDate
     private Instant updatedAt;
@@ -116,6 +117,14 @@ public class ArticleEntity {
 
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    public float[] getSemanticVector() {
+        return semanticVector;
+    }
+
+    public void setSemanticVector(float[] semanticVector) {
+        this.semanticVector = semanticVector;
     }
 
 }

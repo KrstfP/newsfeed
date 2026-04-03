@@ -2,6 +2,7 @@ package com.krstf.newsfeed.application.services;
 
 import com.krstf.newsfeed.domain.models.RssFeedSource;
 import com.krstf.newsfeed.domain.models.RssItem;
+import com.krstf.newsfeed.port.outbound.ai.SemanticVectorizer;
 import com.krstf.newsfeed.port.outbound.repository.ArticleLoader;
 import com.krstf.newsfeed.port.outbound.repository.GetArticle;
 import com.krstf.newsfeed.port.outbound.repository.GetSource;
@@ -20,12 +21,14 @@ public class LoadArticlesUseCaseService {
     private final ArticleLoader articleLoader;
     private final SaveArticle saveArticle;
     private final GetArticle getArticle;
+    private final SemanticVectorizer semanticVectorizer;
 
-    public LoadArticlesUseCaseService(GetSource getSource, ArticleLoader articleLoader, SaveArticle saveArticle, GetArticle getArticle) {
+    public LoadArticlesUseCaseService(GetSource getSource, ArticleLoader articleLoader, SaveArticle saveArticle, GetArticle getArticle, SemanticVectorizer semanticVectorizer) {
         this.getSource = getSource;
         this.articleLoader = articleLoader;
         this.saveArticle = saveArticle;
         this.getArticle = getArticle;
+        this.semanticVectorizer = semanticVectorizer;
     }
 
     @Scheduled(initialDelay = 0, fixedDelay = 60 * 60 * 1000)
@@ -43,6 +46,12 @@ public class LoadArticlesUseCaseService {
             }
             for (RssItem rssItem : rssItems) {
                 if (getArticle.getArticleById(rssItem.getId()).isEmpty()) {
+                    try {
+                        float[] vector = semanticVectorizer.vectorizeText(rssItem.getTitle() + " " + rssItem.getContent());
+                        rssItem.setSemanticVector(vector);
+                    } catch (Exception e) {
+                        log.warn("Failed to vectorize article '{}': {}", rssItem.getId(), e.getMessage());
+                    }
                     saveArticle.saveArticle(rssItem);
                 }
             }

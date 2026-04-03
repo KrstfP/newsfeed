@@ -28,6 +28,7 @@ public class EntityMapper {
         rssItem.setCategories(entity.getCategories());
         rssItem.setAnalysisStatus(AnalysisRequestStatus.valueOf(entity.getAnalysisStatus()));
         rssItem.setAnalysis(entity.getAnalysis());
+        rssItem.setSemanticVector(entity.getSemanticVector());
         return rssItem;
     }
 
@@ -45,6 +46,7 @@ public class EntityMapper {
         entity.setUserId(rssItem.getUserId());
         entity.setAnalysisStatus(rssItem.getAnalysisStatus().name());
         entity.setAnalysis(rssItem.getAnalysis());
+        entity.setSemanticVector(rssItem.getSemanticVector());
         return entity;
     }
 

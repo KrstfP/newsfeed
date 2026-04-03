@@ -24,6 +24,7 @@ public class RssItem {
     private AnalysisRequestStatus analysisStatus = AnalysisRequestStatus.NOT_REQUESTED;
     private String analysis = null;
     private final String userId;
+    private float[] semanticVector = null;
 
     public UUID getId() {
         return id;
@@ -119,6 +120,14 @@ public class RssItem {
 
     public void failAnalysis() {
         this.analysisStatus = AnalysisRequestStatus.FAILED;
+    }
+
+    public float[] getSemanticVector() {
+        return semanticVector;
+    }
+
+    public void setSemanticVector(float[] semanticVector) {
+        this.semanticVector = semanticVector;
     }
 
 }
