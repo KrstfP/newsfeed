@@ -66,4 +66,18 @@ class RssItemTest {
         RssItem item = anyItem();
         assertNull(item.getAnalysis());
     }
+
+    @Test
+    void defaultSemanticVector_isNull() {
+        RssItem item = anyItem();
+        assertNull(item.getSemanticVector());
+    }
+
+    @Test
+    void setSemanticVector_storesVector() {
+        RssItem item = anyItem();
+        float[] vector = {0.1f, 0.2f, 0.3f};
+        item.setSemanticVector(vector);
+        assertArrayEquals(vector, item.getSemanticVector());
+    }
 }
