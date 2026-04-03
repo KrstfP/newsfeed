@@ -29,8 +29,8 @@
     <properties>
         <java.version>21</java.version>
         <spring-ai.version>1.1.2</spring-ai.version>
-        <sonar.projectKey>krstfp_newsfeed</sonar.projectKey>
-        <sonar.organization>krstfp</sonar.organization>
+        <sonar.projectKey>KrstfP_newsfeed</sonar.projectKey>
+        <sonar.organization>fdhbdnpejhnypzdkj7abrrzdahj7kd9pym63nel4</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     </properties>
     <dependencies>
