@@ -2,11 +2,11 @@ package com.krstf.newsfeed.application.services;
 
 import com.krstf.newsfeed.domain.models.AnalysisRequestStatus;
 import com.krstf.newsfeed.domain.models.RssItem;
+import com.krstf.newsfeed.port.outbound.ai.ArticleAnalyzer;
 import com.krstf.newsfeed.port.outbound.notification.ArticleNotification;
 import com.krstf.newsfeed.port.outbound.notification.NotificationChangeType;
 import com.krstf.newsfeed.port.outbound.notification.NotificationObjectType;
 import com.krstf.newsfeed.port.outbound.notification.NotifyArticleStatusChange;
-import com.krstf.newsfeed.port.outbound.repository.ArticleAnalyzer;
 import com.krstf.newsfeed.port.outbound.repository.GetArticle;
 import com.krstf.newsfeed.port.outbound.repository.SaveArticle;
 import org.springframework.scheduling.annotation.Scheduled;

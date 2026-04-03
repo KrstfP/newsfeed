@@ -1,4 +1,4 @@
-package com.krstf.newsfeed.port.outbound.repository;
+package com.krstf.newsfeed.port.outbound.ai;
 
 import com.krstf.newsfeed.domain.models.RssItem;
 

@@ -1,36 +1,40 @@
 package com.krstf.newsfeed.adapter.outbound.mistral;
 
 import com.krstf.newsfeed.domain.models.RssItem;
-import com.krstf.newsfeed.port.outbound.repository.ArticleAnalyzer;
+import com.krstf.newsfeed.port.outbound.ai.ArticleAnalyzer;
+import com.krstf.newsfeed.port.outbound.ai.SemanticVectorizer;
 import org.springframework.ai.mistralai.MistralAiChatModel;
+import org.springframework.ai.mistralai.MistralAiEmbeddingModel;
 import org.springframework.stereotype.Service;
 
 @Service
-public class MistralAgent implements ArticleAnalyzer {
+public class MistralAgent implements ArticleAnalyzer, SemanticVectorizer {
     private final MistralAiChatModel chatModel;
+    private final MistralAiEmbeddingModel embeddingsModel;
 
     private static final String userPrompt = """
             Tu es un analyste militaire et géopolitique.
-            Ton objectif est de lire un rssItem dont je te donne l'URL et de générer un **résumé détaillé** en **gardant exactement la structure suivante**, peu importe l’rssItem. Chaque section doit apparaître et être titrée **tel quel**.
+            Ton objectif est de lire un article dont je te donne l'URL et de générer un **résumé détaillé** en **gardant exactement la structure suivante**, peu importe l’article. Chaque section doit apparaître et être titrée **tel quel**.
             
             STRUCTURE DU RÉSUMÉ (ne jamais changer les titres) :
-            
-            
             
             ## RÉFÉRENCE
             - Source / média
             - Date de publication
             - Auteur (si disponible)
             - Lien direct
-            - Type d’rssItem : news / analyse / tribune / reportage
+            - Type d’article : news / analyse / tribune / reportage
             
+            ## TL;DR
+            - Résumé ultra-court en 2–3 phrases, pour les décideurs pressés
+            - 3–5 points clés très synthétiques
             
             ## SYNTHÈSE / TAKEAWAYS
             - 5–10 lignes résumant ce qu’il faut retenir absolument
             - Messages clés pour un briefing décisionnel
             
             ## SUJET PRINCIPAL
-            - Titre complet de l’rssItem
+            - Titre complet de l’article
             - Résumé du sujet en 2–3 phrases
             
             ## CONTEXTE DÉTAILLÉ
@@ -59,21 +63,27 @@ public class MistralAgent implements ArticleAnalyzer {
             **Instructions supplémentaires** :
             - Pas de phrase d'introduction, tu démarres directement ta réponse par le résumé
             - Rédige en style clair, concis mais complet, orienté militaire / stratégique.
-            - Tout ce qui est important dans l’rssItem doit apparaître dans la section appropriée.
+            - Tout ce qui est important dans l’article doit apparaître dans la section appropriée.
             - Ne supprime ou ne change **aucun titre de section**, même si certaines informations manquent, indique “Non mentionné” si nécessaire.
-            - Si l’rssItem est très technique, détaille les éléments dans la section "CONTENU / FAITS DÉTAILLÉS".
+            - Si l’article est très technique, détaille les éléments dans la section "CONTENU / FAITS DÉTAILLÉS".
             
-            URL de l’rssItem : %s
+            URL de l’article : %s
             
             """;
 
-    public MistralAgent(MistralAiChatModel chatModel) {
+    public MistralAgent(MistralAiChatModel chatModel, MistralAiEmbeddingModel embeddingsModel) {
         this.chatModel = chatModel;
+        this.embeddingsModel = embeddingsModel;
     }
 
 
     @Override
     public String analyzeArticle(RssItem rssItem) {
         return this.chatModel.call(userPrompt.formatted(rssItem.getUrl()));
+    }
+
+    @Override
+    public float[] vectorizeText(String text) {
+        return embeddingsModel.embed(text);
     }
 }

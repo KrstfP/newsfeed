@@ -2,11 +2,11 @@ package com.krstf.newsfeed.application.services;
 
 import com.krstf.newsfeed.domain.models.AnalysisRequestStatus;
 import com.krstf.newsfeed.domain.models.RssItem;
+import com.krstf.newsfeed.port.outbound.ai.ArticleAnalyzer;
 import com.krstf.newsfeed.port.outbound.notification.ArticleNotification;
 import com.krstf.newsfeed.port.outbound.notification.NotificationChangeType;
 import com.krstf.newsfeed.port.outbound.notification.NotificationObjectType;
 import com.krstf.newsfeed.port.outbound.notification.NotifyArticleStatusChange;
-import com.krstf.newsfeed.port.outbound.repository.ArticleAnalyzer;
 import com.krstf.newsfeed.port.outbound.repository.GetArticle;
 import com.krstf.newsfeed.port.outbound.repository.SaveArticle;
 import org.junit.jupiter.api.Test;
@@ -26,12 +26,17 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class AnalyzeArticleUseCaseServiceTest {
 
-    @Mock GetArticle getArticle;
-    @Mock SaveArticle saveArticle;
-    @Mock ArticleAnalyzer articleAnalyzer;
-    @Mock NotifyArticleStatusChange notifyStatusChange;
+    @Mock
+    GetArticle getArticle;
+    @Mock
+    SaveArticle saveArticle;
+    @Mock
+    ArticleAnalyzer articleAnalyzer;
+    @Mock
+    NotifyArticleStatusChange notifyStatusChange;
 
-    @InjectMocks AnalyzeArticleUseCaseService service;
+    @InjectMocks
+    AnalyzeArticleUseCaseService service;
 
     private RssItem anyArticle() {
         return new RssItem(UUID.randomUUID(), "titre", "contenu", "http://example.com", new Date(), UUID.randomUUID(), "source", "test-user");
