@@ -2,13 +2,18 @@ package com.krstf.newsfeed.adapter.outbound.mistral;
 
 import com.krstf.newsfeed.domain.models.RssItem;
 import com.krstf.newsfeed.port.outbound.ai.ArticleAnalyzer;
+import com.krstf.newsfeed.port.outbound.ai.ClusterSummary;
+import com.krstf.newsfeed.port.outbound.ai.ClusterSummarizer;
 import com.krstf.newsfeed.port.outbound.ai.SemanticVectorizer;
+import com.krstf.newsfeed.port.outbound.repository.FullArticleDto;
 import org.springframework.ai.mistralai.MistralAiChatModel;
 import org.springframework.ai.mistralai.MistralAiEmbeddingModel;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
-public class MistralAgent implements ArticleAnalyzer, SemanticVectorizer {
+public class MistralAgent implements ArticleAnalyzer, SemanticVectorizer, ClusterSummarizer {
     private final MistralAiChatModel chatModel;
     private final MistralAiEmbeddingModel embeddingsModel;
 
@@ -85,5 +90,59 @@ public class MistralAgent implements ArticleAnalyzer, SemanticVectorizer {
     @Override
     public float[] vectorizeText(String text) {
         return embeddingsModel.embed(text);
+    }
+
+    @Override
+    public ClusterSummary summarize(List<FullArticleDto> articles) {
+        String articlesText = articles.stream()
+                .map(a -> "Titre: " + a.title() + "\n" + a.content())
+                .collect(java.util.stream.Collectors.joining("\n\n---\n\n"));
+
+        String prompt = clusterPrompt.formatted(articlesText);
+        String response = chatModel.call(prompt);
+        return parseClusterSummary(response);
+    }
+
+    private static final String clusterPrompt = """
+            Tu es un analyste militaire et géopolitique.
+            Voici un ensemble d'articles liés au même sujet :
+
+            %s
+
+            Génère une synthèse du cluster en respectant exactement ce format JSON (sans markdown, sans texte autour) :
+            {
+              "topic": "3 à 5 mots décrivant le sujet commun",
+              "tldr": "Une phrase résumant l'essentiel",
+              "keypoints": ["point clé 1", "point clé 2", "point clé 3"]
+            }
+            """;
+
+    private static ClusterSummary parseClusterSummary(String response) {
+        try {
+            String cleaned = response.strip();
+            String topic = extractJsonField(cleaned, "topic");
+            String tldr = extractJsonField(cleaned, "tldr");
+            List<String> keypoints = extractJsonArray(cleaned, "keypoints");
+            return new ClusterSummary(topic, tldr, keypoints);
+        } catch (Exception e) {
+            return new ClusterSummary(null, null, List.of());
+        }
+    }
+
+    private static String extractJsonField(String json, String field) {
+        String pattern = "\"" + field + "\"\\s*:\\s*\"([^\"]+)\"";
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile(pattern).matcher(json);
+        return m.find() ? m.group(1) : null;
+    }
+
+    private static List<String> extractJsonArray(String json, String field) {
+        String pattern = "\"" + field + "\"\\s*:\\s*\\[([^\\]]+)\\]";
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile(pattern).matcher(json);
+        if (!m.find()) return List.of();
+        String[] items = m.group(1).split(",");
+        return java.util.Arrays.stream(items)
+                .map(s -> s.strip().replaceAll("^\"|\"$", ""))
+                .filter(s -> !s.isEmpty())
+                .toList();
     }
 }
