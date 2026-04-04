@@ -1,8 +1,10 @@
 package com.krstf.newsfeed.adapter.outbound.repository.mongo.mappers;
 
 import com.krstf.newsfeed.adapter.outbound.repository.mongo.entity.ArticleEntity;
+import com.krstf.newsfeed.adapter.outbound.repository.mongo.entity.ClusterEntity;
 import com.krstf.newsfeed.adapter.outbound.repository.mongo.entity.SourceEntity;
 import com.krstf.newsfeed.domain.models.AnalysisRequestStatus;
+import com.krstf.newsfeed.domain.models.ArticleCluster;
 import com.krstf.newsfeed.domain.models.RssFeedSource;
 import com.krstf.newsfeed.domain.models.RssFeedSourceStatus;
 import com.krstf.newsfeed.domain.models.RssItem;
@@ -10,6 +12,7 @@ import com.krstf.newsfeed.port.outbound.repository.FullArticleDto;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -247,5 +250,95 @@ class EntityMapperTest {
         assertEquals(source.getDescription(), entity.getDescription());
         assertEquals(source.getUserId(), entity.getUserId());
         assertEquals("ACTIVE", entity.getStatus());
+    }
+
+    // --- toDomain(ClusterEntity) ---
+
+    private ClusterEntity anyClusterEntity() {
+        UUID id1 = UUID.randomUUID();
+        UUID id2 = UUID.randomUUID();
+        ClusterEntity entity = new ClusterEntity(
+                UUID.randomUUID().toString(),
+                "conflit Proche-Orient",
+                "Résumé en une phrase",
+                new float[]{0.1f, 0.2f},
+                List.of("frappe aérienne", "cessez-le-feu"),
+                List.of(id1.toString(), id2.toString()),
+                "user1",
+                Instant.ofEpochSecond(1_000_000)
+        );
+        return entity;
+    }
+
+    @Test
+    void toDomain_cluster_mapsAllScalarFields() {
+        ClusterEntity entity = anyClusterEntity();
+
+        ArticleCluster cluster = mapper.toDomain(entity);
+
+        assertEquals(entity.getId(), cluster.getId());
+        assertEquals(entity.getTopic(), cluster.getTopic());
+        assertEquals(entity.getTldr(), cluster.getTldr());
+        assertArrayEquals(entity.getCentroid(), cluster.getCentroid());
+        assertEquals(entity.getKeypoints(), cluster.getKeypoints());
+        assertEquals(entity.getUserId(), cluster.getUserId());
+        assertEquals(entity.getCreatedAt(), cluster.getCreatedAt());
+    }
+
+    @Test
+    void toDomain_cluster_convertsArticleIdsToUUID() {
+        ClusterEntity entity = anyClusterEntity();
+
+        ArticleCluster cluster = mapper.toDomain(entity);
+
+        assertEquals(2, cluster.getArticleIds().size());
+        cluster.getArticleIds().forEach(id -> assertInstanceOf(UUID.class, id));
+        assertEquals(
+                entity.getArticleIds().stream().map(UUID::fromString).toList(),
+                cluster.getArticleIds()
+        );
+    }
+
+    // --- toEntity(ArticleCluster) ---
+
+    private ArticleCluster anyCluster() {
+        return new ArticleCluster(
+                UUID.randomUUID(),
+                "conflit Proche-Orient",
+                "Résumé en une phrase",
+                new float[]{0.1f, 0.2f},
+                List.of("frappe aérienne", "cessez-le-feu"),
+                new java.util.ArrayList<>(List.of(UUID.randomUUID(), UUID.randomUUID())),
+                Instant.ofEpochSecond(1_000_000),
+                "user1"
+        );
+    }
+
+    @Test
+    void toEntity_cluster_mapsAllScalarFields() {
+        ArticleCluster cluster = anyCluster();
+
+        ClusterEntity entity = mapper.toEntity(cluster);
+
+        assertEquals(cluster.getId().toString(), entity.getId().toString());
+        assertEquals(cluster.getTopic(), entity.getTopic());
+        assertEquals(cluster.getTldr(), entity.getTldr());
+        assertArrayEquals(cluster.getCentroid(), entity.getCentroid());
+        assertEquals(cluster.getKeypoints(), entity.getKeypoints());
+        assertEquals(cluster.getUserId(), entity.getUserId());
+        assertEquals(cluster.getCreatedAt(), entity.getCreatedAt());
+    }
+
+    @Test
+    void toEntity_cluster_convertsArticleIdsToString() {
+        ArticleCluster cluster = anyCluster();
+
+        ClusterEntity entity = mapper.toEntity(cluster);
+
+        assertEquals(2, entity.getArticleIds().size());
+        assertEquals(
+                cluster.getArticleIds().stream().map(UUID::toString).toList(),
+                entity.getArticleIds()
+        );
     }
 }
