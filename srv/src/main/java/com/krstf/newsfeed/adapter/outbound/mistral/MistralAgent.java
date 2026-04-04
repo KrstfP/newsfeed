@@ -141,7 +141,7 @@ public class MistralAgent implements ArticleAnalyzer, SemanticVectorizer, Cluste
         if (!m.find()) return List.of();
         String[] items = m.group(1).split(",");
         return java.util.Arrays.stream(items)
-                .map(s -> s.strip().replaceAll("^\"|\"$", ""))
+                .map(s -> s.strip().replaceAll("(^\")|(\"+$)", ""))
                 .filter(s -> !s.isEmpty())
                 .toList();
     }
