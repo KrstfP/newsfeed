@@ -56,7 +56,9 @@ public class ArticleCluster {
     }
 
     private static float cosineSimilarity(float[] a, float[] b) {
-        float dot = 0f, normA = 0f, normB = 0f;
+        float dot = 0f;
+        float normA = 0f;
+        float normB = 0f;
         for (int i = 0; i < a.length; i++) {
             dot += a[i] * b[i];
             normA += a[i] * a[i];
@@ -75,18 +77,55 @@ public class ArticleCluster {
         return result;
     }
 
-    public UUID getId() { return id; }
-    public String getTopic() { return topic; }
-    public String getTldr() { return tldr; }
-    public float[] getCentroid() { return centroid; }
-    public List<String> getKeypoints() { return keypoints; }
-    public List<UUID> getArticleIds() { return articleIds; }
-    public Instant getCreatedAt() { return createdAt; }
-    public String getUserId() { return userId; }
+    public UUID getId() {
+        return id;
+    }
 
-    public void setTopic(String topic) { this.topic = topic; }
-    public void setTldr(String tldr) { this.tldr = tldr; }
-    public void setCentroid(float[] centroid) { this.centroid = centroid; }
-    public void setKeypoints(List<String> keypoints) { this.keypoints = keypoints; }
-    public void setArticleIds(List<UUID> articleIds) { this.articleIds = articleIds; }
+    public String getTopic() {
+        return topic;
+    }
+
+    public String getTldr() {
+        return tldr;
+    }
+
+    public float[] getCentroid() {
+        return centroid;
+    }
+
+    public List<String> getKeypoints() {
+        return keypoints;
+    }
+
+    public List<UUID> getArticleIds() {
+        return articleIds;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setTopic(String topic) {
+        this.topic = topic;
+    }
+
+    public void setTldr(String tldr) {
+        this.tldr = tldr;
+    }
+
+    public void setCentroid(float[] centroid) {
+        this.centroid = centroid;
+    }
+
+    public void setKeypoints(List<String> keypoints) {
+        this.keypoints = keypoints;
+    }
+
+    public void setArticleIds(List<UUID> articleIds) {
+        this.articleIds = articleIds;
+    }
 }

@@ -2,8 +2,8 @@ package com.krstf.newsfeed.adapter.outbound.mistral;
 
 import com.krstf.newsfeed.domain.models.RssItem;
 import com.krstf.newsfeed.port.outbound.ai.ArticleAnalyzer;
-import com.krstf.newsfeed.port.outbound.ai.ClusterSummary;
 import com.krstf.newsfeed.port.outbound.ai.ClusterSummarizer;
+import com.krstf.newsfeed.port.outbound.ai.ClusterSummary;
 import com.krstf.newsfeed.port.outbound.ai.SemanticVectorizer;
 import com.krstf.newsfeed.port.outbound.repository.FullArticleDto;
 import org.springframework.ai.mistralai.MistralAiChatModel;
@@ -17,7 +17,7 @@ public class MistralAgent implements ArticleAnalyzer, SemanticVectorizer, Cluste
     private final MistralAiChatModel chatModel;
     private final MistralAiEmbeddingModel embeddingsModel;
 
-    private static final String userPrompt = """
+    private static final String USER_PROMPT = """
             Tu es un analyste militaire et géopolitique.
             Ton objectif est de lire un article dont je te donne l'URL et de générer un **résumé détaillé** en **gardant exactement la structure suivante**, peu importe l’article. Chaque section doit apparaître et être titrée **tel quel**.
             
@@ -84,7 +84,7 @@ public class MistralAgent implements ArticleAnalyzer, SemanticVectorizer, Cluste
 
     @Override
     public String analyzeArticle(RssItem rssItem) {
-        return this.chatModel.call(userPrompt.formatted(rssItem.getUrl()));
+        return this.chatModel.call(USER_PROMPT.formatted(rssItem.getUrl()));
     }
 
     @Override
@@ -98,17 +98,17 @@ public class MistralAgent implements ArticleAnalyzer, SemanticVectorizer, Cluste
                 .map(a -> "Titre: " + a.title() + "\n" + a.content())
                 .collect(java.util.stream.Collectors.joining("\n\n---\n\n"));
 
-        String prompt = clusterPrompt.formatted(articlesText);
+        String prompt = CLUSTER_PROMPT.formatted(articlesText);
         String response = chatModel.call(prompt);
         return parseClusterSummary(response);
     }
 
-    private static final String clusterPrompt = """
+    private static final String CLUSTER_PROMPT = """
             Tu es un analyste militaire et géopolitique.
             Voici un ensemble d'articles liés au même sujet :
-
+            
             %s
-
+            
             Génère une synthèse du cluster en respectant exactement ce format JSON (sans markdown, sans texte autour) :
             {
               "topic": "3 à 5 mots décrivant le sujet commun",

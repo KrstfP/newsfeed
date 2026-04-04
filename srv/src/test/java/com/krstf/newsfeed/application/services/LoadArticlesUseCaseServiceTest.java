@@ -3,8 +3,8 @@ package com.krstf.newsfeed.application.services;
 import com.krstf.newsfeed.domain.models.ArticleCluster;
 import com.krstf.newsfeed.domain.models.RssFeedSource;
 import com.krstf.newsfeed.domain.models.RssItem;
-import com.krstf.newsfeed.port.outbound.ai.ClusterSummary;
 import com.krstf.newsfeed.port.outbound.ai.ClusterSummarizer;
+import com.krstf.newsfeed.port.outbound.ai.ClusterSummary;
 import com.krstf.newsfeed.port.outbound.ai.SemanticVectorizer;
 import com.krstf.newsfeed.port.outbound.repository.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,11 +19,7 @@ import java.net.URI;
 import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -33,17 +29,27 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class LoadArticlesUseCaseServiceTest {
 
-    @Mock GetSource getSource;
-    @Mock ArticleLoader articleLoader;
-    @Mock SaveArticle saveArticle;
-    @Mock GetArticle getArticle;
-    @Mock SemanticVectorizer semanticVectorizer;
-    @Mock GetCluster getCluster;
-    @Mock SaveCluster saveCluster;
-    @Mock GetFullArticle getFullArticle;
-    @Mock ClusterSummarizer clusterSummarizer;
+    @Mock
+    GetSource getSource;
+    @Mock
+    ArticleLoader articleLoader;
+    @Mock
+    SaveArticle saveArticle;
+    @Mock
+    GetArticle getArticle;
+    @Mock
+    SemanticVectorizer semanticVectorizer;
+    @Mock
+    GetCluster getCluster;
+    @Mock
+    SaveCluster saveCluster;
+    @Mock
+    GetFullArticle getFullArticle;
+    @Mock
+    ClusterSummarizer clusterSummarizer;
 
-    @InjectMocks LoadArticlesUseCaseService service;
+    @InjectMocks
+    LoadArticlesUseCaseService service;
 
     private static final float[] ANY_VECTOR = {1f, 0f, 0f};
     private static final ClusterSummary ANY_SUMMARY = new ClusterSummary("topic", "tldr", List.of("k1"));
@@ -65,12 +71,6 @@ class LoadArticlesUseCaseServiceTest {
     private RssItem anyArticle() {
         return new RssItem(UUID.randomUUID(), "titre", "contenu", "https://example.com/1",
                 new Date(), UUID.randomUUID(), "Example", "user1");
-    }
-
-    private RssItem articleWithVector(float[] vector) {
-        RssItem article = anyArticle();
-        article.setSemanticVector(vector);
-        return article;
     }
 
     private ArticleCluster clusterMatchingVector(float[] centroid) {
