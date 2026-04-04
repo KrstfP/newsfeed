@@ -129,6 +129,13 @@ public class MistralAgent implements ArticleAnalyzer, SemanticVectorizer, Cluste
         }
     }
 
+    private static String stripQuotes(String s) {
+        String t = s.strip();
+        if (t.startsWith("\"")) t = t.substring(1);
+        if (t.endsWith("\"")) t = t.substring(0, t.length() - 1);
+        return t;
+    }
+
     private static String extractJsonField(String json, String field) {
         String pattern = "\"" + field + "\"\\s*:\\s*\"([^\"]+)\"";
         java.util.regex.Matcher m = java.util.regex.Pattern.compile(pattern).matcher(json);
@@ -141,7 +148,7 @@ public class MistralAgent implements ArticleAnalyzer, SemanticVectorizer, Cluste
         if (!m.find()) return List.of();
         String[] items = m.group(1).split(",");
         return java.util.Arrays.stream(items)
-                .map(s -> s.strip().replaceAll("(^\")|(\"+$)", ""))
+                .map(MistralAgent::stripQuotes)
                 .filter(s -> !s.isEmpty())
                 .toList();
     }
