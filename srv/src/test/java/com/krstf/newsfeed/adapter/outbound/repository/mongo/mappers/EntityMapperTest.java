@@ -3,11 +3,7 @@ package com.krstf.newsfeed.adapter.outbound.repository.mongo.mappers;
 import com.krstf.newsfeed.adapter.outbound.repository.mongo.entity.ArticleEntity;
 import com.krstf.newsfeed.adapter.outbound.repository.mongo.entity.ClusterEntity;
 import com.krstf.newsfeed.adapter.outbound.repository.mongo.entity.SourceEntity;
-import com.krstf.newsfeed.domain.models.AnalysisRequestStatus;
-import com.krstf.newsfeed.domain.models.ArticleCluster;
-import com.krstf.newsfeed.domain.models.RssFeedSource;
-import com.krstf.newsfeed.domain.models.RssFeedSourceStatus;
-import com.krstf.newsfeed.domain.models.RssItem;
+import com.krstf.newsfeed.domain.models.*;
 import com.krstf.newsfeed.port.outbound.repository.FullArticleDto;
 import org.junit.jupiter.api.Test;
 
@@ -257,7 +253,7 @@ class EntityMapperTest {
     private ClusterEntity anyClusterEntity() {
         UUID id1 = UUID.randomUUID();
         UUID id2 = UUID.randomUUID();
-        ClusterEntity entity = new ClusterEntity(
+        return new ClusterEntity(
                 UUID.randomUUID().toString(),
                 "conflit Proche-Orient",
                 "Résumé en une phrase",
@@ -267,7 +263,6 @@ class EntityMapperTest {
                 "user1",
                 Instant.ofEpochSecond(1_000_000)
         );
-        return entity;
     }
 
     @Test
