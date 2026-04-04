@@ -1,14 +1,17 @@
 package com.krstf.newsfeed.adapter.outbound.repository.mongo.mappers;
 
 import com.krstf.newsfeed.adapter.outbound.repository.mongo.entity.ArticleEntity;
+import com.krstf.newsfeed.adapter.outbound.repository.mongo.entity.ClusterEntity;
 import com.krstf.newsfeed.adapter.outbound.repository.mongo.entity.SourceEntity;
 import com.krstf.newsfeed.domain.models.AnalysisRequestStatus;
+import com.krstf.newsfeed.domain.models.ArticleCluster;
 import com.krstf.newsfeed.domain.models.RssFeedSource;
 import com.krstf.newsfeed.domain.models.RssFeedSourceStatus;
 import com.krstf.newsfeed.domain.models.RssItem;
 import com.krstf.newsfeed.port.outbound.repository.FullArticleDto;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -88,6 +91,38 @@ public class EntityMapper {
                 rssFeedSource.getDescription(),
                 rssFeedSource.getUserId(),
                 rssFeedSource.getStatus().name()
+        );
+    }
+
+    public ArticleCluster toDomain(ClusterEntity entity) {
+        List<UUID> articleIds = entity.getArticleIds().stream()
+                .map(UUID::fromString)
+                .toList();
+        return new ArticleCluster(
+                entity.getId(),
+                entity.getTopic(),
+                entity.getTldr(),
+                entity.getCentroid(),
+                entity.getKeypoints(),
+                articleIds,
+                entity.getCreatedAt(),
+                entity.getUserId()
+        );
+    }
+
+    public ClusterEntity toEntity(ArticleCluster cluster) {
+        List<String> articleIds = cluster.getArticleIds().stream()
+                .map(UUID::toString)
+                .toList();
+        return new ClusterEntity(
+                cluster.getId().toString(),
+                cluster.getTopic(),
+                cluster.getTldr(),
+                cluster.getCentroid(),
+                cluster.getKeypoints(),
+                articleIds,
+                cluster.getUserId(),
+                cluster.getCreatedAt()
         );
     }
 }
