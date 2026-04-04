@@ -6,6 +6,8 @@ import com.krstf.newsfeed.port.outbound.repository.GetCluster;
 import com.krstf.newsfeed.port.outbound.repository.SaveCluster;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -36,8 +38,10 @@ public class ClusterRepository implements GetCluster, SaveCluster {
     }
 
     @Override
-    public List<ArticleCluster> getByUserId(String userId) {
-        return springMongoClusterRepository.findAllByUserId(userId).stream()
+    public List<ArticleCluster> getByUserId(String userId, LocalDate since) {
+        return springMongoClusterRepository
+                .findAllByUserIdAndCreatedAtGreaterThanEqual(userId, since.atStartOfDay(ZoneOffset.UTC).toInstant())
+                .stream()
                 .map(entityMapper::toDomain)
                 .toList();
     }
