@@ -38,13 +38,15 @@ class ClusterArticlesUseCaseServiceTest {
     @Mock GetFullArticle getFullArticle;
     @Mock ClusterSummarizer clusterSummarizer;
 
-    @InjectMocks ClusterArticlesUseCaseService service;
+    ClusterArticlesUseCaseService service;
 
     private static final float[] ANY_VECTOR = {1f, 0f, 0f};
     private static final ClusterSummary ANY_SUMMARY = new ClusterSummary("topic", "tldr", List.of("k1"));
 
     @BeforeEach
     void setUp() {
+        service = new ClusterArticlesUseCaseService(0.80f, getArticle, getCluster, saveCluster,
+                deleteCluster, getFullArticle, clusterSummarizer);
         lenient().when(getCluster.getByUserId(anyString(), any(LocalDate.class))).thenReturn(List.of());
         lenient().when(getFullArticle.getFullArticles(anyString(), any())).thenReturn(new PagedArticlesResponse(List.of(), null));
         lenient().when(clusterSummarizer.summarize(any())).thenReturn(ANY_SUMMARY);

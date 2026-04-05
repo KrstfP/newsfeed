@@ -11,6 +11,7 @@ import com.krstf.newsfeed.port.outbound.notification.NotificationChangeType;
 import com.krstf.newsfeed.port.outbound.repository.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
@@ -24,7 +25,8 @@ import java.util.Set;
 public class ClusterArticlesUseCaseService implements ClusterArticlesUseCase, ArticleStatusChangeListener {
 
     private static final Logger log = LoggerFactory.getLogger(ClusterArticlesUseCaseService.class);
-    private static final float CLUSTER_SIMILARITY_THRESHOLD = 0.80f;
+
+    private final float clusterSimilarityThreshold;
 
     private final GetArticle getArticle;
     private final GetCluster getCluster;
@@ -33,12 +35,14 @@ public class ClusterArticlesUseCaseService implements ClusterArticlesUseCase, Ar
     private final GetFullArticle getFullArticle;
     private final ClusterSummarizer clusterSummarizer;
 
-    public ClusterArticlesUseCaseService(GetArticle getArticle,
+    public ClusterArticlesUseCaseService(@Value("${newsfeed.cluster.similarity-threshold}") float clusterSimilarityThreshold,
+                                         GetArticle getArticle,
                                          GetCluster getCluster,
                                          SaveCluster saveCluster,
                                          DeleteCluster deleteCluster,
                                          GetFullArticle getFullArticle,
                                          ClusterSummarizer clusterSummarizer) {
+        this.clusterSimilarityThreshold = clusterSimilarityThreshold;
         this.getArticle = getArticle;
         this.getCluster = getCluster;
         this.saveCluster = saveCluster;
@@ -79,7 +83,7 @@ public class ClusterArticlesUseCaseService implements ClusterArticlesUseCase, Ar
             List<ArticleCluster> weekClusters = getCluster.getByUserId(article.getUserId(), weekStart);
 
             Optional<ArticleCluster> match = weekClusters.stream()
-                    .filter(c -> c.matches(article.getSemanticVector(), CLUSTER_SIMILARITY_THRESHOLD))
+                    .filter(c -> c.matches(article.getSemanticVector(), clusterSimilarityThreshold))
                     .findFirst();
 
             ArticleCluster cluster;
