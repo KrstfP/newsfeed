@@ -9,10 +9,13 @@ import AnalysisModal from './AnalysisModal.vue'
 import { getArticles } from '../application/GetArticles'
 import { NewsfeedArticleRepository } from '../adapters/NewsfeedArticles'
 import { SseArticleStatusUpdates } from '../adapters/SseArticleStatusUpdates'
+import { NInfiniteScroll } from 'naive-ui'
 
 const authService = inject<AuthService>('authService')!
 const articles = ref<Article[]>([])
 const repo = new NewsfeedArticleRepository(authService)
+const nextPageToken = ref<string | null>(null)
+const hasMore = ref(true)
 
 const analyzedFilter = ref<boolean | undefined>(undefined)
 const sinceFilter = ref<string | undefined>(undefined)
@@ -31,11 +34,29 @@ function toggleSince() {
   sinceFilter.value = sinceFilter.value ? undefined : yesterday()
 }
 
-async function reload() {
+function buildFilters(pageToken?: string): ArticleFilters {
   const filters: ArticleFilters = {}
   if (analyzedFilter.value !== undefined) filters.analyzed = analyzedFilter.value
   if (sinceFilter.value) filters.since = sinceFilter.value
-  articles.value = await getArticles(repo, filters)
+  if (pageToken) filters.pageToken = pageToken
+  return filters
+}
+
+async function reload() {
+  nextPageToken.value = null
+  hasMore.value = true
+  const result = await getArticles(repo, buildFilters())
+  articles.value = result.articles
+  nextPageToken.value = result.nextPageToken
+  hasMore.value = result.nextPageToken !== null
+}
+
+async function loadMore() {
+  if (!hasMore.value) return
+  const result = await getArticles(repo, buildFilters(nextPageToken.value ?? undefined))
+  articles.value = [...articles.value, ...result.articles]
+  nextPageToken.value = result.nextPageToken
+  hasMore.value = result.nextPageToken !== null
 }
 
 function handleStatusUpdate(update: ArticleStatusUpdate) {
@@ -95,7 +116,7 @@ function onOpenAnalysis(article: Article) {
     </div>
     <div class="col-sep" />
 
-    <div class="list">
+    <n-infinite-scroll class="list" :distance="200" @load="loadMore">
       <ArticleItem
         v-for="article in articles"
         :key="article.id"
@@ -103,7 +124,7 @@ function onOpenAnalysis(article: Article) {
         @analyze="onAnalyze"
         @open-analysis="onOpenAnalysis"
       />
-    </div>
+    </n-infinite-scroll>
   </div>
 
   <AnalysisModal

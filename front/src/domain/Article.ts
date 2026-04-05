@@ -12,6 +12,13 @@ export type RequestStatus =
 export interface ArticleFilters {
   analyzed?: boolean
   since?: string // YYYY-MM-DD
+  limit?: number
+  pageToken?: string
+}
+
+export interface PagedArticles {
+  articles: Article[]
+  nextPageToken: string | null
 }
 
 export interface Article {

@@ -107,8 +107,8 @@ public class LoadArticlesUseCaseService {
         try {
             List<FullArticleDto> articles = getFullArticle.getFullArticles(
                     cluster.getUserId(),
-                    new ArticleFilters(null, null)
-            ).stream()
+                    ArticleFilters.none()
+            ).articles().stream()
                     .filter(a -> cluster.getArticleIds().contains(java.util.UUID.fromString(a.id())))
                     .toList();
 

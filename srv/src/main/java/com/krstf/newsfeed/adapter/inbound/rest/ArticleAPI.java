@@ -3,14 +3,13 @@ package com.krstf.newsfeed.adapter.inbound.rest;
 import com.krstf.newsfeed.port.inbound.RequestArticleAnalysisUseCase;
 import com.krstf.newsfeed.port.inbound.dto.RequestDto;
 import com.krstf.newsfeed.port.outbound.repository.ArticleFilters;
-import com.krstf.newsfeed.port.outbound.repository.FullArticleDto;
 import com.krstf.newsfeed.port.outbound.repository.GetFullArticle;
+import com.krstf.newsfeed.port.outbound.repository.PagedArticlesResponse;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -28,12 +27,18 @@ public class ArticleAPI {
     }
 
     @GetMapping("/articles")
-    public ResponseEntity<List<FullArticleDto>> getArticles(
+    public ResponseEntity<PagedArticlesResponse> getArticles(
             @RequestParam(required = false) Boolean analyzed,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate since
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate since,
+            @RequestParam(defaultValue = "100") int limit,
+            @RequestParam(required = false) String pageToken
     ) {
+        int clampedLimit = Math.min(limit, ArticleFilters.MAX_LIMIT);
         return ResponseEntity.ok(
-                getFullArticle.getFullArticles(currentUser.getUserId(), new ArticleFilters(analyzed, since))
+                getFullArticle.getFullArticles(
+                        currentUser.getUserId(),
+                        new ArticleFilters(analyzed, since, clampedLimit, pageToken)
+                )
         );
     }
 

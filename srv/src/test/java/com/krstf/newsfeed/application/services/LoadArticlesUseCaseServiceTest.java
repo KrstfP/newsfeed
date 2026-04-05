@@ -59,7 +59,7 @@ class LoadArticlesUseCaseServiceTest {
         // Stubs par défaut pour les interactions clustering — utilisés dans les tests
         // qui ne testent pas spécifiquement le clustering mais déclenchent quand même le chemin
         lenient().when(getCluster.getByUserId(anyString(), any(LocalDate.class))).thenReturn(List.of());
-        lenient().when(getFullArticle.getFullArticles(anyString(), any())).thenReturn(List.of());
+        lenient().when(getFullArticle.getFullArticles(anyString(), any())).thenReturn(new PagedArticlesResponse(List.of(), null));
         lenient().when(clusterSummarizer.summarize(any())).thenReturn(ANY_SUMMARY);
         lenient().when(saveCluster.save(any())).thenAnswer(inv -> inv.getArgument(0));
     }
