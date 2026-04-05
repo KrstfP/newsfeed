@@ -6,7 +6,7 @@ import com.krstf.newsfeed.port.outbound.ai.ClusterSummarizer;
 import com.krstf.newsfeed.port.outbound.ai.ClusterSummary;
 import com.krstf.newsfeed.port.outbound.ai.SemanticVectorizer;
 import com.krstf.newsfeed.port.outbound.repository.FullArticleDto;
-import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 import org.springframework.ai.mistralai.MistralAiChatModel;
 import org.springframework.ai.mistralai.MistralAiEmbeddingModel;
 import org.springframework.stereotype.Service;
@@ -17,6 +17,7 @@ import java.util.List;
 public class MistralAgent implements ArticleAnalyzer, SemanticVectorizer, ClusterSummarizer {
     private final MistralAiChatModel chatModel;
     private final MistralAiEmbeddingModel embeddingsModel;
+    private final io.github.resilience4j.ratelimiter.RateLimiter rateLimiter;
 
     private static final String USER_PROMPT = """
             Tu es un analyste militaire et géopolitique.
@@ -77,27 +78,33 @@ public class MistralAgent implements ArticleAnalyzer, SemanticVectorizer, Cluste
             
             """;
 
-    public MistralAgent(MistralAiChatModel chatModel, MistralAiEmbeddingModel embeddingsModel) {
+    public MistralAgent(MistralAiChatModel chatModel, MistralAiEmbeddingModel embeddingsModel,
+                        RateLimiterRegistry rateLimiterRegistry) {
         this.chatModel = chatModel;
         this.embeddingsModel = embeddingsModel;
+        this.rateLimiter = rateLimiterRegistry.rateLimiter("mistral");
+    }
+
+    private void acquirePermit() {
+        rateLimiter.acquirePermission();
     }
 
 
     @Override
-    @RateLimiter(name = "mistral")
     public String analyzeArticle(RssItem rssItem) {
+        acquirePermit();
         return this.chatModel.call(USER_PROMPT.formatted(rssItem.getUrl()));
     }
 
     @Override
-    @RateLimiter(name = "mistral")
     public float[] vectorizeText(String text) {
+        acquirePermit();
         return embeddingsModel.embed(text);
     }
 
     @Override
-    @RateLimiter(name = "mistral")
     public ClusterSummary summarize(List<FullArticleDto> articles) {
+        acquirePermit();
         String articlesText = articles.stream()
                 .map(a -> "Titre: " + a.title() + "\n" + a.content())
                 .collect(java.util.stream.Collectors.joining("\n\n---\n\n"));

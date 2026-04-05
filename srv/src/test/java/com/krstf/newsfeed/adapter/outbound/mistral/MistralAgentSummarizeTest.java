@@ -2,14 +2,18 @@ package com.krstf.newsfeed.adapter.outbound.mistral;
 
 import com.krstf.newsfeed.port.outbound.ai.ClusterSummary;
 import com.krstf.newsfeed.port.outbound.repository.FullArticleDto;
+import io.github.resilience4j.ratelimiter.RateLimiter;
+import io.github.resilience4j.ratelimiter.RateLimiterConfig;
+import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.ai.mistralai.MistralAiChatModel;
 import org.springframework.ai.mistralai.MistralAiEmbeddingModel;
 
+import java.time.Duration;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -24,7 +28,18 @@ class MistralAgentSummarizeTest {
     @Mock MistralAiChatModel chatModel;
     @Mock MistralAiEmbeddingModel embeddingsModel;
 
-    @InjectMocks MistralAgent agent;
+    MistralAgent agent;
+
+    @BeforeEach
+    void setUp() {
+        RateLimiterConfig config = RateLimiterConfig.custom()
+                .limitForPeriod(Integer.MAX_VALUE)
+                .limitRefreshPeriod(Duration.ofSeconds(1))
+                .timeoutDuration(Duration.ZERO)
+                .build();
+        RateLimiterRegistry registry = RateLimiterRegistry.of(config);
+        agent = new MistralAgent(chatModel, embeddingsModel, registry);
+    }
 
     private FullArticleDto anyArticle() {
         return new FullArticleDto(
