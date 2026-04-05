@@ -95,9 +95,10 @@ public class EntityMapper {
     }
 
     public ArticleCluster toDomain(ClusterEntity entity) {
-        List<UUID> articleIds = entity.getArticleIds().stream()
-                .map(UUID::fromString)
-                .toList();
+        List<UUID> articleIds = entity.getArticleIds() == null ? List.of() :
+                entity.getArticleIds().stream()
+                        .map(UUID::fromString)
+                        .toList();
         return new ArticleCluster(
                 entity.getId(),
                 entity.getTopic(),

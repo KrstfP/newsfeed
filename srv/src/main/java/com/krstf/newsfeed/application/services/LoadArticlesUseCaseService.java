@@ -3,8 +3,8 @@ package com.krstf.newsfeed.application.services;
 import com.krstf.newsfeed.domain.models.ArticleCluster;
 import com.krstf.newsfeed.domain.models.RssFeedSource;
 import com.krstf.newsfeed.domain.models.RssItem;
-import com.krstf.newsfeed.port.outbound.ai.ClusterSummary;
 import com.krstf.newsfeed.port.outbound.ai.ClusterSummarizer;
+import com.krstf.newsfeed.port.outbound.ai.ClusterSummary;
 import com.krstf.newsfeed.port.outbound.ai.SemanticVectorizer;
 import com.krstf.newsfeed.port.outbound.repository.*;
 import org.slf4j.Logger;
@@ -20,7 +20,7 @@ import java.util.Optional;
 @Service
 public class LoadArticlesUseCaseService {
     private static final Logger log = LoggerFactory.getLogger(LoadArticlesUseCaseService.class);
-    private static final float CLUSTER_SIMILARITY_THRESHOLD = 0.82f;
+    private static final float CLUSTER_SIMILARITY_THRESHOLD = 0.75f;
 
     private final GetSource getSource;
     private final ArticleLoader articleLoader;
@@ -99,16 +99,16 @@ public class LoadArticlesUseCaseService {
             updateSummary(cluster);
             saveCluster.save(cluster);
         } catch (Exception e) {
-            log.warn("Failed to assign article '{}' to cluster: {}", article.getId(), e.getMessage());
+            log.warn("Failed to assign article '{}' to cluster", article.getId(), e);
         }
     }
 
     private void updateSummary(ArticleCluster cluster) {
         try {
             List<FullArticleDto> articles = getFullArticle.getFullArticles(
-                    cluster.getUserId(),
-                    ArticleFilters.none()
-            ).articles().stream()
+                            cluster.getUserId(),
+                            ArticleFilters.none()
+                    ).articles().stream()
                     .filter(a -> cluster.getArticleIds().contains(java.util.UUID.fromString(a.id())))
                     .toList();
 
