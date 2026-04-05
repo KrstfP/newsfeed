@@ -10,7 +10,9 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
 import java.time.ZoneOffset;
+import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -48,7 +50,7 @@ public class ArticleRepository implements GetArticle, SaveArticle, GetFullArticl
     }
 
     @Override
-    public List<FullArticleDto> getFullArticles(String userId, ArticleFilters filters) {
+    public PagedArticlesResponse getFullArticles(String userId, ArticleFilters filters) {
         Criteria criteria = Criteria.where("userId").is(userId);
 
         if (filters.analyzed() != null) {
@@ -64,10 +66,35 @@ public class ArticleRepository implements GetArticle, SaveArticle, GetFullArticl
             criteria = criteria.and("publishedAt").gte(sinceDate);
         }
 
-        Query query = new Query(criteria).with(Sort.by(Sort.Direction.DESC, "publishedAt"));
-        return mongoTemplate.find(query, ArticleEntity.class)
+        if (filters.pageToken() != null) {
+            Date cursor = decodePageToken(filters.pageToken());
+            criteria = criteria.and("publishedAt").lt(cursor);
+        }
+
+        Query query = new Query(criteria)
+                .with(Sort.by(Sort.Direction.DESC, "publishedAt"))
+                .limit(filters.limit());
+
+        List<FullArticleDto> articles = mongoTemplate.find(query, ArticleEntity.class)
                 .stream()
                 .map(entityMapper::toFullArticleDto)
                 .toList();
+
+        String nextPageToken = articles.size() == filters.limit()
+                ? encodePageToken(articles.getLast().publishedAt())
+                : null;
+
+        return new PagedArticlesResponse(articles, nextPageToken);
+    }
+
+    private static String encodePageToken(Date publishedAt) {
+        return Base64.getUrlEncoder().encodeToString(
+                String.valueOf(publishedAt.getTime()).getBytes(StandardCharsets.UTF_8)
+        );
+    }
+
+    private static Date decodePageToken(String token) {
+        String millis = new String(Base64.getUrlDecoder().decode(token), StandardCharsets.UTF_8);
+        return new Date(Long.parseLong(millis));
     }
 }

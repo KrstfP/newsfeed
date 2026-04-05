@@ -1,5 +1,5 @@
-import type { Article, ArticleFilters } from '../domain/Article'
+import type { ArticleFilters, PagedArticles } from '../domain/Article'
 
 export interface ArticleRepository {
-  getAll(filters?: ArticleFilters): Promise<Article[]>
+  getPage(filters?: ArticleFilters): Promise<PagedArticles>
 }
