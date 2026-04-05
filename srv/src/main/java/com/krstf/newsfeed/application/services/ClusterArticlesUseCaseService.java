@@ -57,7 +57,7 @@ public class ClusterArticlesUseCaseService implements ClusterArticlesUseCase, Ar
         ArticleCluster cluster = getArticle.getArticleById(notification.articleId())
                 .map(this::assignToCluster)
                 .orElse(null);
-        if (cluster != null) updateSummary(cluster);
+        if (cluster != null) updateSummaryAndSave(cluster);
     }
 
     @Override
@@ -72,7 +72,7 @@ public class ClusterArticlesUseCaseService implements ClusterArticlesUseCase, Ar
                 uniqueClusters.add(cluster);
             }
         }
-        uniqueClusters.forEach(cluster -> updateSummary(cluster));
+        uniqueClusters.forEach(cluster -> updateSummaryAndSave(cluster));
         log.info("Rebuilt clusters for user '{}': processed {} articles", userId, articles.size());
     }
 
@@ -93,8 +93,7 @@ public class ClusterArticlesUseCaseService implements ClusterArticlesUseCase, Ar
             } else {
                 cluster = ArticleCluster.create(article, article.getUserId());
             }
-
-            saveCluster.save(cluster);
+            updateSummaryAndSave(cluster);
             return cluster;
         } catch (Exception e) {
             log.warn("Failed to assign article '{}' to cluster", article.getId(), e);
@@ -102,7 +101,7 @@ public class ClusterArticlesUseCaseService implements ClusterArticlesUseCase, Ar
         return null;
     }
 
-    private void updateSummary(ArticleCluster cluster) {
+    private void updateSummaryAndSave(ArticleCluster cluster) {
         try {
             List<FullArticleDto> articles = getFullArticle.getFullArticles(
                             cluster.getUserId(),
@@ -117,6 +116,8 @@ public class ClusterArticlesUseCaseService implements ClusterArticlesUseCase, Ar
             cluster.setKeypoints(summary.keypoints());
         } catch (Exception e) {
             log.warn("Failed to summarize cluster '{}': {}", cluster.getId(), e.getMessage());
+        } finally {
+            saveCluster.save(cluster);
         }
     }
 }
