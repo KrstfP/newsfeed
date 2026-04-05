@@ -13,4 +13,14 @@ class ArticleFiltersTest {
         assertNull(filters.analyzed());
         assertNull(filters.since());
     }
+
+    @Test
+    void none_returnsMaxLimit() {
+        assertEquals(ArticleFilters.MAX_LIMIT, ArticleFilters.none().limit());
+    }
+
+    @Test
+    void none_returnsNullPageToken() {
+        assertNull(ArticleFilters.none().pageToken());
+    }
 }
