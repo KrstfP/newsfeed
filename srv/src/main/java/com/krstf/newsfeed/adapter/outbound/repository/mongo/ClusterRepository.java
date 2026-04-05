@@ -2,6 +2,7 @@ package com.krstf.newsfeed.adapter.outbound.repository.mongo;
 
 import com.krstf.newsfeed.adapter.outbound.repository.mongo.mappers.EntityMapper;
 import com.krstf.newsfeed.domain.models.ArticleCluster;
+import com.krstf.newsfeed.port.outbound.repository.DeleteCluster;
 import com.krstf.newsfeed.port.outbound.repository.GetCluster;
 import com.krstf.newsfeed.port.outbound.repository.SaveCluster;
 import org.springframework.stereotype.Service;
@@ -13,7 +14,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
-public class ClusterRepository implements GetCluster, SaveCluster {
+public class ClusterRepository implements GetCluster, SaveCluster, DeleteCluster {
 
     private final SpringMongoClusterRepository springMongoClusterRepository;
     private final EntityMapper entityMapper;
@@ -50,5 +51,10 @@ public class ClusterRepository implements GetCluster, SaveCluster {
     public Optional<ArticleCluster> getByArticleId(UUID articleId) {
         return springMongoClusterRepository.findFirstByArticleIdsContaining(articleId.toString())
                 .map(entityMapper::toDomain);
+    }
+
+    @Override
+    public void deleteAllByUserId(String userId) {
+        springMongoClusterRepository.deleteAllByUserId(userId);
     }
 }

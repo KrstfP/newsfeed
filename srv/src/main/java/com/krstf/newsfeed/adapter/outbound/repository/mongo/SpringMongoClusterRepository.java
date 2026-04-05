@@ -10,4 +10,5 @@ import java.util.Optional;
 public interface SpringMongoClusterRepository extends MongoRepository<ClusterEntity, String> {
     List<ClusterEntity> findAllByUserIdAndCreatedAtGreaterThanEqual(String userId, Instant since);
     Optional<ClusterEntity> findFirstByArticleIdsContaining(String articleId);
+    void deleteAllByUserId(String userId);
 }

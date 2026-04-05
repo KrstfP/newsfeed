@@ -50,6 +50,14 @@ public class ArticleRepository implements GetArticle, SaveArticle, GetFullArticl
     }
 
     @Override
+    public List<RssItem> getAllByUserId(String userId) {
+        return springMongoArticleRepository.findAllByUserIdOrderByPublishedAtDesc(userId)
+                .stream()
+                .map(entityMapper::toDomain)
+                .toList();
+    }
+
+    @Override
     public PagedArticlesResponse getFullArticles(String userId, ArticleFilters filters) {
         Criteria criteria = Criteria.where("userId").is(userId);
 
