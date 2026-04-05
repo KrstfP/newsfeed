@@ -5,17 +5,19 @@ import com.krstf.newsfeed.port.outbound.notification.ArticleStatusChangeListener
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 class SpringEventBridgeAdapter {
 
-    private final ArticleStatusChangeListener listener;
+    private final List<ArticleStatusChangeListener> listeners;
 
-    SpringEventBridgeAdapter(ArticleStatusChangeListener listener) {
-        this.listener = listener;
+    SpringEventBridgeAdapter(List<ArticleStatusChangeListener> listeners) {
+        this.listeners = listeners;
     }
 
     @EventListener
     public void onSpringEvent(ArticleStatusSpringEvent event) {
-        listener.onStatusChanged(event.notification());
+        listeners.forEach(l -> l.onStatusChanged(event.notification()));
     }
 }

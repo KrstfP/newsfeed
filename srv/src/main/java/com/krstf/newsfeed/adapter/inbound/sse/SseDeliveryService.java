@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.krstf.newsfeed.port.outbound.notification.ArticleNotification;
 import com.krstf.newsfeed.port.outbound.notification.ArticleStatusChangeListener;
+import com.krstf.newsfeed.port.outbound.notification.NotificationChangeType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -48,6 +49,7 @@ class SseDeliveryService implements ArticleStatusChangeListener {
 
     @Override
     public void onStatusChanged(ArticleNotification notification) {
+        if (notification.changeType() == NotificationChangeType.ARTICLE_CREATED) return;
         SseEmitter emitter = emitters.get(notification.userId());
         if (emitter == null) return;
 
