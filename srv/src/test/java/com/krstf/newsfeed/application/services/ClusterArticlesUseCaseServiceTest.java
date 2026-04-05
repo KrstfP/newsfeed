@@ -151,10 +151,9 @@ class ClusterArticlesUseCaseServiceTest {
     }
 
     @Test
-    void onStatusChanged_articleCreated_summarizerThrows_clusterStillSaved() {
+    void onStatusChanged_articleCreated_noSummarizer_clusterSaved() {
         RssItem article = articleWithVector(ANY_VECTOR);
         when(getArticle.getArticleById(article.getId())).thenReturn(Optional.of(article));
-        when(clusterSummarizer.summarize(any())).thenThrow(new RuntimeException("quota exceeded"));
 
         service.onStatusChanged(createdNotification(article));
 

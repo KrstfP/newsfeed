@@ -80,7 +80,7 @@ public class ClusterArticlesUseCaseService implements ClusterArticlesUseCase, Ar
                 cluster = ArticleCluster.create(article, article.getUserId());
             }
 
-            updateSummary(cluster);
+            //updateSummary(cluster);
             saveCluster.save(cluster);
         } catch (Exception e) {
             log.warn("Failed to assign article '{}' to cluster", article.getId(), e);
