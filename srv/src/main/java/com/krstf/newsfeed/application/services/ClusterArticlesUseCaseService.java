@@ -15,8 +15,10 @@ import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class ClusterArticlesUseCaseService implements ClusterArticlesUseCase, ArticleStatusChangeListener {
@@ -48,22 +50,30 @@ public class ClusterArticlesUseCaseService implements ClusterArticlesUseCase, Ar
     @Override
     public void onStatusChanged(ArticleNotification notification) {
         if (notification.changeType() != NotificationChangeType.ARTICLE_CREATED) return;
-        getArticle.getArticleById(notification.articleId()).ifPresent(this::assignToCluster);
+        ArticleCluster cluster = getArticle.getArticleById(notification.articleId())
+                .map(this::assignToCluster)
+                .orElse(null);
+        if (cluster != null) updateSummary(cluster);
     }
 
     @Override
     public void rebuildClusters(String userId) {
         log.info("Rebuilding clusters for user '{}'", userId);
         deleteCluster.deleteAllByUserId(userId);
+        Set<ArticleCluster> uniqueClusters = new HashSet<>(); // HashSet pour l'unicité
         List<RssItem> articles = getArticle.getAllByUserId(userId);
         for (RssItem article : articles) {
-            assignToCluster(article);
+            ArticleCluster cluster = assignToCluster(article);
+            if (cluster != null) {
+                uniqueClusters.add(cluster);
+            }
         }
+        uniqueClusters.forEach(cluster -> updateSummary(cluster));
         log.info("Rebuilt clusters for user '{}': processed {} articles", userId, articles.size());
     }
 
-    private void assignToCluster(RssItem article) {
-        if (article.getSemanticVector() == null) return;
+    private ArticleCluster assignToCluster(RssItem article) {
+        if (article.getSemanticVector() == null) return null;
         try {
             LocalDate weekStart = LocalDate.now().with(DayOfWeek.MONDAY);
             List<ArticleCluster> weekClusters = getCluster.getByUserId(article.getUserId(), weekStart);
@@ -80,11 +90,12 @@ public class ClusterArticlesUseCaseService implements ClusterArticlesUseCase, Ar
                 cluster = ArticleCluster.create(article, article.getUserId());
             }
 
-            //updateSummary(cluster);
             saveCluster.save(cluster);
+            return cluster;
         } catch (Exception e) {
             log.warn("Failed to assign article '{}' to cluster", article.getId(), e);
         }
+        return null;
     }
 
     private void updateSummary(ArticleCluster cluster) {
