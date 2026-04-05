@@ -6,6 +6,7 @@ import com.krstf.newsfeed.port.outbound.ai.ClusterSummarizer;
 import com.krstf.newsfeed.port.outbound.ai.ClusterSummary;
 import com.krstf.newsfeed.port.outbound.ai.SemanticVectorizer;
 import com.krstf.newsfeed.port.outbound.repository.FullArticleDto;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import org.springframework.ai.mistralai.MistralAiChatModel;
 import org.springframework.ai.mistralai.MistralAiEmbeddingModel;
 import org.springframework.stereotype.Service;
@@ -83,16 +84,19 @@ public class MistralAgent implements ArticleAnalyzer, SemanticVectorizer, Cluste
 
 
     @Override
+    @RateLimiter(name = "mistral")
     public String analyzeArticle(RssItem rssItem) {
         return this.chatModel.call(USER_PROMPT.formatted(rssItem.getUrl()));
     }
 
     @Override
+    @RateLimiter(name = "mistral")
     public float[] vectorizeText(String text) {
         return embeddingsModel.embed(text);
     }
 
     @Override
+    @RateLimiter(name = "mistral")
     public ClusterSummary summarize(List<FullArticleDto> articles) {
         String articlesText = articles.stream()
                 .map(a -> "Titre: " + a.title() + "\n" + a.content())
