@@ -11,6 +11,7 @@ import com.krstf.newsfeed.domain.models.RssItem;
 import com.krstf.newsfeed.port.outbound.repository.FullArticleDto;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -95,10 +96,10 @@ public class EntityMapper {
     }
 
     public ArticleCluster toDomain(ClusterEntity entity) {
-        List<UUID> articleIds = entity.getArticleIds() == null ? List.of() :
+        List<UUID> articleIds = entity.getArticleIds() == null ? new ArrayList<>() :
                 entity.getArticleIds().stream()
                         .map(UUID::fromString)
-                        .toList();
+                        .collect(java.util.stream.Collectors.toCollection(ArrayList::new));
         return new ArticleCluster(
                 entity.getId(),
                 entity.getTopic(),
