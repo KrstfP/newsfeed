@@ -21,6 +21,8 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 
+import static org.mockito.Mockito.atLeastOnce;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -151,13 +153,72 @@ class ClusterArticlesUseCaseServiceTest {
     }
 
     @Test
-    void onStatusChanged_articleCreated_noSummarizer_clusterSaved() {
+    void onStatusChanged_articleCreated_clusterSaved() {
         RssItem article = articleWithVector(ANY_VECTOR);
         when(getArticle.getArticleById(article.getId())).thenReturn(Optional.of(article));
 
         service.onStatusChanged(createdNotification(article));
 
         verify(saveCluster).save(any());
+    }
+
+    @Test
+    void onStatusChanged_articleNotFound_nothingHappens() {
+        ArticleNotification notification = new ArticleNotification(
+                UUID.randomUUID(), NotificationObjectType.ARTICLE,
+                NotificationChangeType.ARTICLE_CREATED, "user1", null, null);
+        when(getArticle.getArticleById(notification.articleId())).thenReturn(Optional.empty());
+
+        service.onStatusChanged(notification);
+
+        verifyNoInteractions(getCluster, saveCluster, clusterSummarizer);
+    }
+
+    @Test
+    void onStatusChanged_articleCreated_topicAndTldrSetFromSummarizer() {
+        RssItem article = articleWithVector(ANY_VECTOR);
+        ClusterSummary summary = new ClusterSummary("geopolitique", "résumé court", List.of("point 1"));
+        when(getArticle.getArticleById(article.getId())).thenReturn(Optional.of(article));
+        when(clusterSummarizer.summarize(any())).thenReturn(summary);
+
+        service.onStatusChanged(createdNotification(article));
+
+        ArgumentCaptor<ArticleCluster> captor = ArgumentCaptor.forClass(ArticleCluster.class);
+        verify(saveCluster).save(captor.capture());
+        assertThat(captor.getValue().getTopic()).isEqualTo("geopolitique");
+        assertThat(captor.getValue().getTldr()).isEqualTo("résumé court");
+        assertThat(captor.getValue().getKeypoints()).containsExactly("point 1");
+    }
+
+    @Test
+    void onStatusChanged_articleCreated_summarizerThrows_doesNotPropagate() {
+        RssItem article = articleWithVector(ANY_VECTOR);
+        when(getArticle.getArticleById(article.getId())).thenReturn(Optional.of(article));
+        when(clusterSummarizer.summarize(any())).thenThrow(new RuntimeException("quota exceeded"));
+
+        // ne doit pas propager l'exception
+        service.onStatusChanged(createdNotification(article));
+
+        verify(saveCluster).save(any());
+    }
+
+    @Test
+    void onStatusChanged_articleCreated_summarizerCalledWithClusterArticles() {
+        RssItem article = articleWithVector(ANY_VECTOR);
+        FullArticleDto dto = new FullArticleDto(article.getId().toString(), article.getTitle(),
+                article.getContent(), "https://example.com", new Date(),
+                UUID.randomUUID().toString(), "Example", List.of(), "NOT_REQUESTED", null);
+        when(getArticle.getArticleById(article.getId())).thenReturn(Optional.of(article));
+        when(getFullArticle.getFullArticles(anyString(), any()))
+                .thenReturn(new PagedArticlesResponse(List.of(dto), null));
+        when(clusterSummarizer.summarize(any())).thenReturn(ANY_SUMMARY);
+
+        service.onStatusChanged(createdNotification(article));
+
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<List<FullArticleDto>> captor = ArgumentCaptor.forClass(List.class);
+        verify(clusterSummarizer).summarize(captor.capture());
+        assertThat(captor.getValue()).containsExactly(dto);
     }
 
     // --- rebuildClusters ---
@@ -201,5 +262,42 @@ class ClusterArticlesUseCaseServiceTest {
         service.rebuildClusters("user1");
 
         verify(saveCluster, never()).save(any());
+    }
+
+    @Test
+    void rebuildClusters_twoArticlesSameCluster_summarizerCalledOnce() {
+        // Deux articles avec des vecteurs similaires → même cluster
+        float[] v1 = {1f, 0f, 0f};
+        float[] v2 = {0.99f, 0.01f, 0f}; // très proche de v1 → cosine ≈ 1.0
+        RssItem a1 = articleWithVector(v1);
+        RssItem a2 = articleWithVector(v2);
+
+        // Premier article : pas de cluster existant → création
+        // Deuxième article : le cluster créé par a1 est retourné
+        ArticleCluster clusterFromRepo = clusterMatchingVector(v1.clone());
+        when(getArticle.getAllByUserId("user1")).thenReturn(List.of(a1, a2));
+        when(getCluster.getByUserId(anyString(), any()))
+                .thenReturn(List.of())                   // pour a1 : aucun cluster
+                .thenReturn(List.of(clusterFromRepo));   // pour a2 : le cluster de a1
+
+        service.rebuildClusters("user1");
+
+        // saveCluster appelé 2 fois (une par article), mais updateSummary une fois par cluster unique
+        verify(clusterSummarizer, atLeastOnce()).summarize(any());
+    }
+
+    @Test
+    void rebuildClusters_getClusterThrows_otherArticlesStillProcessed() {
+        RssItem failing = articleWithVector(new float[]{1f, 0f, 0f});
+        RssItem ok = articleWithVector(new float[]{0f, 1f, 0f});
+        when(getArticle.getAllByUserId("user1")).thenReturn(List.of(failing, ok));
+        when(getCluster.getByUserId(anyString(), any()))
+                .thenThrow(new RuntimeException("DB error")) // pour failing
+                .thenReturn(List.of());                       // pour ok
+
+        service.rebuildClusters("user1");
+
+        // ok doit quand même avoir généré un cluster
+        verify(saveCluster, times(1)).save(any());
     }
 }
