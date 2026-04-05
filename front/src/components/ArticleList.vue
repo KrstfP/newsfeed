@@ -116,17 +116,15 @@ function onOpenAnalysis(article: Article) {
     </div>
     <div class="col-sep" />
 
-    <div class="list">
-      <n-infinite-scroll :distance="200" @load="loadMore">
-        <ArticleItem
-          v-for="article in articles"
-          :key="article.id"
-          :article="article"
-          @analyze="onAnalyze"
-          @open-analysis="onOpenAnalysis"
-        />
-      </n-infinite-scroll>
-    </div>
+    <n-infinite-scroll class="list" :distance="200" @load="loadMore">
+      <ArticleItem
+        v-for="article in articles"
+        :key="article.id"
+        :article="article"
+        @analyze="onAnalyze"
+        @open-analysis="onOpenAnalysis"
+      />
+    </n-infinite-scroll>
   </div>
 
   <AnalysisModal
